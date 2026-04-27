@@ -30,8 +30,16 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install StatiCrypt
-        run: npm install -g staticrypt@3.5.0
+      - name: Install StatiCrypt in isolated /tmp dir (pin yargs@17)
+        run: |
+          # staticrypt 3.5.0 + 최신 yargs 조합에 Yargs.usage 호환성 버그가 있어서
+          # 임시 디렉토리에 staticrypt + yargs@17.x 함께 설치. repo 의 package.json 건드리지 않음.
+          mkdir -p /tmp/staticrypt-env
+          cd /tmp/staticrypt-env
+          npm init -y > /dev/null 2>&1
+          npm install staticrypt@3.5.0 yargs@17.7.2 > /dev/null 2>&1
+          # PATH 등록 — 다음 step 에서 그냥 staticrypt 명령으로 호출 가능
+          echo "/tmp/staticrypt-env/node_modules/.bin" >> $GITHUB_PATH
 
       - name: Verify StatiCrypt
         run: staticrypt --help | head -5
@@ -44,11 +52,9 @@ jobs:
             echo "❌ STATICRYPT_PASSWORD secret 미설정 — repo Settings → Secrets → Actions 에서 추가하세요."
             exit 1
           fi
-          # v3.x 호환: -d 로 디렉토리 지정 (--short 제거)
           staticrypt crypto-analyzer.html -p "$STATICRYPT_PASSWORD" -d build
           echo "--- build 폴더 내용 ---"
           ls -la build/ || true
-          # 출력된 암호화 파일을 index.html 로 복사 (루트 진입 시 비번 입력)
           if [ -f build/crypto-analyzer.html ]; then
             cp build/crypto-analyzer.html index.html
             echo "✅ index.html 생성 완료"
@@ -57,7 +63,6 @@ jobs:
             find build -type f 2>/dev/null || echo "build 폴더 없음"
             exit 1
           fi
-          # 정리: build 폴더는 배포 artifact 에 포함시키지 않음
           rm -rf build
 
       - name: Setup Pages
