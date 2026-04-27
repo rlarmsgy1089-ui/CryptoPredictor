@@ -1,0 +1,29 @@
+# macOS
+.DS_Store
+
+# 백업 파일들 — GitHub 에 안 올림 (히스토리는 git 자체로 관리)
+*.backup_*
+*.bak
+
+# Node 모듈
+node_modules/
+
+# 개인/임시 데이터
+alert_reports/
+predictor/
+backtest/
+guide_work/
+
+# 개발 스크래치
+_dt_new_iife.txt
+improve_prompt.md
+
+# Python 캐시
+__pycache__/
+*.pyc
+
+# 로그
+*.log
+
+# StatiCrypt 빌드 결과물 (배포 시 자동 생성)
+build/

@@ -1,0 +1,2254 @@
+<!DOCTYPE html>
+<html lang="ko" class="theme-dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>차트 패턴 & 컨플루언스 존 — 초보자 가이드</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { interpolate-size: allow-keywords; }
+
+    html.theme-dark {
+      --bg: #0A0A0A; --surface: #141414; --surface-hover: #1C1C1C;
+      --border: rgba(255,255,255,0.06);
+      --text: #EDEDED; --text-secondary: #9CA3AF;
+      --accent: #3b82f6; --accent-secondary: #8b5cf6;
+      --positive: #10b981; --negative: #f43f5e; --warning: #f59e0b;
+      --chart-grid: rgba(255,255,255,0.08);
+      --chart-candle-up: #10b981; --chart-candle-down: #f43f5e;
+      --chart-line: #64748b; --chart-highlight: rgba(251,191,36,0.12);
+    }
+    html.theme-light {
+      --bg: #FAFAF9; --surface: #FFFFFF; --surface-hover: #F5F5F4;
+      --border: rgba(0,0,0,0.08);
+      --text: #0f172a; --text-secondary: #475569;
+      --accent: #2563eb; --accent-secondary: #7c3aed;
+      --positive: #059669; --negative: #e11d48; --warning: #d97706;
+      --chart-grid: rgba(0,0,0,0.08);
+      --chart-candle-up: #059669; --chart-candle-down: #e11d48;
+      --chart-line: #475569; --chart-highlight: rgba(217,119,6,0.14);
+    }
+
+    body {
+      font-family: 'Inter', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg); color: var(--text);
+      line-height: 1.65; -webkit-font-smoothing: antialiased;
+      letter-spacing: -0.01em;
+      transition: background 0.3s, color 0.3s;
+      scrollbar-gutter: stable;
+    }
+    h1,h2,h3,h4 {
+      color: var(--text); letter-spacing: -0.03em; line-height: 1.18;
+      text-wrap: balance; font-family: 'Inter', 'Noto Sans KR', sans-serif;
+    }
+    h1 { font-weight: 800; font-size: clamp(2.2rem, 4vw, 3.2rem); }
+    h2 { font-weight: 700; font-size: clamp(1.6rem, 2.6vw, 2.2rem); }
+    h3 { font-weight: 600; font-size: 1.35rem; }
+    h4 { font-weight: 600; font-size: 1.1rem; }
+    p, li { color: var(--text); font-size: 1rem; }
+    strong { font-weight: 600; color: var(--text); }
+    .text-secondary { color: var(--text-secondary); }
+
+    main#main-content { max-width: 960px; margin: 0 auto; padding: 56px 24px 96px; }
+
+    /* ===== Hero ===== */
+    .hero {
+      padding: 56px 36px; border-radius: 20px; margin-bottom: 48px;
+      background:
+        radial-gradient(circle at 15% 20%, rgba(139,92,246,0.15), transparent 55%),
+        radial-gradient(circle at 85% 80%, rgba(59,130,246,0.15), transparent 55%),
+        var(--surface);
+      border: 1px solid var(--border);
+    }
+    .hero .eyebrow {
+      font-size: 0.85rem; font-weight: 600; letter-spacing: 0.18em;
+      text-transform: uppercase; color: var(--accent);
+      margin-bottom: 12px;
+    }
+    .hero p.lede { font-size: 1.15rem; color: var(--text-secondary); max-width: 680px; margin-top: 16px; }
+
+    /* ===== Nav ===== */
+    .toc {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 24px 28px; margin-bottom: 48px;
+    }
+    .toc h3 { font-size: 0.85rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-secondary); font-weight: 600; margin-bottom: 16px; }
+    .toc ol { list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px 20px; }
+    .toc a {
+      color: var(--text); text-decoration: none; font-size: 0.95rem;
+      padding: 8px 0; display: flex; gap: 12px; align-items: baseline;
+      border-bottom: 1px dashed transparent; transition: border-color 0.15s, color 0.15s;
+    }
+    .toc a:hover { color: var(--accent); border-color: var(--accent); }
+    .toc a .num { font-variant-numeric: tabular-nums; color: var(--text-secondary); min-width: 28px; font-weight: 500; }
+
+    /* ===== Section ===== */
+    section.chapter { margin-top: 72px; }
+    section.chapter > h2 {
+      padding-bottom: 14px; margin-bottom: 28px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: baseline; gap: 16px;
+    }
+    section.chapter > h2 .chap-num {
+      font-size: 0.95rem; font-weight: 500; color: var(--accent);
+      letter-spacing: 0.16em; text-transform: uppercase;
+    }
+    .lead-quote {
+      border-left: 3px solid var(--accent);
+      padding: 4px 18px; margin: 24px 0;
+      color: var(--text-secondary); font-style: italic; font-size: 1.05rem;
+    }
+
+    /* ===== Pattern card ===== */
+    .pattern {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 32px;
+      margin-bottom: 32px;
+      transition: box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+    .pattern:hover {
+      border-color: rgba(59,130,246,0.3);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.10);
+    }
+    .pattern-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; margin-bottom: 8px; flex-wrap: wrap; }
+    .pattern-title { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+    .pattern-title h3 { margin: 0; }
+    .tone-badge {
+      padding: 4px 12px; border-radius: 999px; font-size: 0.8rem; font-weight: 600;
+      letter-spacing: 0.04em; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .tone-badge.up { background: rgba(16,185,129,0.14); color: var(--positive); }
+    .tone-badge.down { background: rgba(244,63,94,0.14); color: var(--negative); }
+    .tone-badge.neutral { background: rgba(100,116,139,0.14); color: var(--text-secondary); }
+    .tone-badge.reversal { background: rgba(245,158,11,0.14); color: var(--warning); }
+    .tone-badge.continuation { background: rgba(59,130,246,0.14); color: var(--accent); }
+    .tone-badge.measurement { background: rgba(139,92,246,0.14); color: var(--accent-secondary); }
+
+    .pattern .hook {
+      color: var(--text-secondary); font-size: 1.02rem;
+      font-style: italic; margin-bottom: 22px;
+      padding-left: 16px; border-left: 2px solid var(--border);
+    }
+
+    .pattern-body { display: grid; grid-template-columns: minmax(280px, 360px) 1fr; gap: 32px; align-items: start; }
+    .pattern-chart {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 12px; padding: 16px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .pattern-chart svg { width: 100%; height: auto; display: block; }
+
+    .pattern-detail h4 { margin-top: 18px; margin-bottom: 6px; color: var(--text); }
+    .pattern-detail h4:first-child { margin-top: 0; }
+    .pattern-detail p { color: var(--text); margin-bottom: 8px; font-size: 0.98rem; line-height: 1.7; }
+    .pattern-detail ul { list-style: none; margin-left: 0; }
+    .pattern-detail li { padding: 4px 0 4px 22px; position: relative; font-size: 0.95rem; line-height: 1.6; }
+    .pattern-detail li::before {
+      content: ''; position: absolute; left: 6px; top: 14px;
+      width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
+    }
+
+    .trade-plan {
+      background: rgba(59,130,246,0.05); border: 1px solid rgba(59,130,246,0.15);
+      border-radius: 10px; padding: 14px 18px; margin-top: 18px;
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+    }
+    .trade-plan .tp-item { font-size: 0.9rem; }
+    .trade-plan .tp-item .tp-label {
+      color: var(--text-secondary); text-transform: uppercase;
+      letter-spacing: 0.1em; font-size: 0.72rem; display: block; margin-bottom: 4px; font-weight: 600;
+    }
+    .trade-plan .tp-item .tp-val { font-weight: 500; }
+
+    /* ===== Info card ===== */
+    .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin: 24px 0; }
+    .info-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 22px;
+    }
+    .info-card h4 { font-size: 1.05rem; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+    .info-card p { color: var(--text-secondary); font-size: 0.95rem; }
+
+    /* ===== Tier table ===== */
+    .tier-row { display: grid; grid-template-columns: 64px 1fr; gap: 16px; align-items: center; padding: 16px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 12px; background: var(--surface); }
+    .tier-badge { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 700; }
+    .tier-badge.s { background: rgba(16,185,129,0.14); color: var(--positive); }
+    .tier-badge.a { background: rgba(59,130,246,0.14); color: var(--accent); }
+    .tier-badge.b { background: rgba(148,163,184,0.18); color: var(--text-secondary); }
+    .tier-row h4 { margin-bottom: 4px; font-size: 1.05rem; }
+    .tier-row p { color: var(--text-secondary); font-size: 0.93rem; }
+
+    /* ===== Checklist ===== */
+    .checklist { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px; margin-top: 24px; }
+    .checklist ul { list-style: none; }
+    .checklist li { padding: 10px 0 10px 32px; position: relative; border-bottom: 1px dashed var(--border); font-size: 1rem; }
+    .checklist li:last-child { border-bottom: none; }
+    .checklist li::before {
+      content: '✓'; position: absolute; left: 4px; top: 9px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: rgba(16,185,129,0.14); color: var(--positive);
+      display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8rem;
+    }
+
+    /* ===== Callout ===== */
+    .callout {
+      border-radius: 12px; padding: 18px 22px; margin: 24px 0;
+      border-left: 4px solid var(--accent);
+      background: rgba(59,130,246,0.05);
+      font-size: 0.97rem;
+    }
+    .callout.warn { border-left-color: var(--warning); background: rgba(245,158,11,0.06); }
+    .callout.tip { border-left-color: var(--positive); background: rgba(16,185,129,0.05); }
+    .callout strong { display: block; margin-bottom: 4px; }
+
+    /* ===== Card ===== */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 24px;
+      transition: box-shadow 0.2s ease;
+    }
+    .card:hover { box-shadow: 0 0 0 1px var(--border), 0 8px 16px rgba(0,0,0,0.08); }
+
+    /* ===== Animations ===== */
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .animate { animation: fadeInUp 0.6s ease-out both; }
+    .animate.delay-1 { animation-delay: 0.1s; }
+    .animate.delay-2 { animation-delay: 0.2s; }
+    .animate.delay-3 { animation-delay: 0.3s; }
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      .reveal { opacity: 1; transform: none; }
+    }
+
+    /* ===== Print ===== */
+    @media print {
+      body { background: white !important; color: black !important; }
+      .viz-menu, .reveal { display: revert; opacity: 1 !important; transform: none !important; }
+      .pattern, .card, .info-card, .tier-row { break-inside: avoid; border: 1px solid #ddd; box-shadow: none; }
+      * { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    }
+    @page { margin: 1in; @bottom-center { content: "Page " counter(page); font-size: 9pt; color: #666; } }
+
+    /* ===== Menu ===== */
+    .viz-menu { position: fixed; top: 16px; right: 16px; z-index: 9999; }
+    .viz-menu-toggle {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--text); cursor: pointer; display: flex;
+      align-items: center; justify-content: center;
+      backdrop-filter: blur(12px); transition: all 0.2s;
+    }
+    .viz-menu-toggle:hover { background: var(--surface-hover); }
+    .viz-menu-dropdown {
+      position: absolute; top: 52px; right: 0; min-width: 200px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 8px;
+      opacity: 0; visibility: hidden; transform: translateY(-8px);
+      transition: all 0.2s; backdrop-filter: blur(16px);
+    }
+    .viz-menu-dropdown.open { opacity: 1; visibility: visible; transform: translateY(0); }
+    .viz-menu-dropdown button {
+      width: 100%; padding: 10px 14px; border: none; border-radius: 8px;
+      background: transparent; color: var(--text); font-size: 14px;
+      font-family: inherit; cursor: pointer; text-align: left;
+      display: flex; align-items: center; gap: 10px; transition: background 0.15s;
+    }
+    .viz-menu-dropdown button:hover { background: var(--surface-hover); }
+
+    /* ===== Skip to content ===== */
+    .skip-to-content {
+      position: absolute; top: -40px; left: 6px; background: var(--accent);
+      color: white; padding: 8px 12px; text-decoration: none;
+      border-radius: 4px; opacity: 0; pointer-events: none;
+      transition: all 0.2s; z-index: 10000;
+    }
+    .skip-to-content:focus { top: 6px; opacity: 1; pointer-events: auto; }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 768px) {
+      main#main-content { padding: 40px 18px 72px; }
+      .hero { padding: 36px 24px; }
+      .pattern { padding: 22px; }
+      .pattern-body { grid-template-columns: 1fr; gap: 20px; }
+      .trade-plan { grid-template-columns: 1fr; gap: 10px; }
+    }
+    @media (max-width: 375px) {
+      body { overflow-x: hidden; }
+      .hero { padding: 28px 20px; }
+      .tier-row { grid-template-columns: 48px 1fr; gap: 12px; padding: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <a href="#main-content" class="skip-to-content">본문으로 건너뛰기</a>
+
+  <!-- MENU -->
+  <div class="viz-menu">
+    <button class="viz-menu-toggle" onclick="toggleMenu()" aria-label="Menu">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="3" y1="5" x2="17" y2="5"/><line x1="3" y1="10" x2="17" y2="10"/><line x1="3" y1="15" x2="17" y2="15"/>
+      </svg>
+    </button>
+    <div class="viz-menu-dropdown" id="vizMenuDropdown">
+      <button onclick="cycleTheme()"><span id="themeIcon">🌙</span><span id="themeLabel">Dark</span></button>
+      <button onclick="downloadImage()"><span>📥</span><span>PNG 저장</span></button>
+      <button onclick="window.print()"><span>🖨️</span><span>인쇄 / PDF</span></button>
+    </div>
+  </div>
+
+  <main id="main-content" role="main">
+
+    <!-- HERO -->
+    <section class="hero animate">
+      <div class="eyebrow">Crypto Analyzer Pro · Beginner Guide</div>
+      <h1>차트 패턴 &amp; 컨플루언스 존<br>완전 초보자 안내서</h1>
+      <p class="lede">
+        대시보드가 "🟢 S 티어" 알림을 띄웠을 때, 그 뒤에서 무슨 일이 벌어지고 있는 걸까요?
+        이 문서는 수식이나 코드 없이, <strong>중학생도 이해할 수 있는 비유</strong>로
+        우리가 쓰는 패턴 <strong>20여 가지</strong> 와 "컨플루언스 존" 개념,
+        그리고 <strong>실전 매매 순서</strong>까지 처음부터 끝까지 설명합니다.
+      </p>
+    </section>
+
+    <!-- TOC -->
+    <nav class="toc animate delay-1" aria-label="목차">
+      <h3>목차</h3>
+      <ol>
+        <li><a href="#ch1"><span class="num">01</span><span>왜 차트를 '패턴'으로 보는가</span></a></li>
+        <li><a href="#ch2"><span class="num">02</span><span>기본기 — 캔들·피벗·지지저항</span></a></li>
+        <li><a href="#ch3"><span class="num">03</span><span>컨플루언스 존 (핵심)</span></a></li>
+        <li><a href="#ch4"><span class="num">04</span><span>반전 패턴 (다이버전스 포함)</span></a></li>
+        <li><a href="#ch5"><span class="num">05</span><span>지속 패턴 (MA 정배열·크로스 포함)</span></a></li>
+        <li><a href="#ch6"><span class="num">06</span><span>측정 도구 — 피보·엘리엇·볼륨프로파일</span></a></li>
+        <li><a href="#ch7"><span class="num">07</span><span>AI 예측 모델 — 선형회귀 · XGBoost</span></a></li>
+        <li><a href="#ch8"><span class="num">08</span><span>실전 매매 순서 (9단계 플로우)</span></a></li>
+        <li><a href="#ch9"><span class="num">09</span><span>실전 체크리스트</span></a></li>
+      </ol>
+    </nav>
+
+    <!-- ============================================================
+         CHAPTER 1 — 왜 차트를 '패턴'으로 보는가
+    ============================================================ -->
+    <section class="chapter" id="ch1" data-reveal>
+      <h2><span class="chap-num">Chapter 1</span> 왜 차트를 '패턴'으로 보는가</h2>
+
+      <p>
+        가격은 매 초 올랐다 내렸다 합니다. 그 움직임 하나하나를 따로 보면
+        그저 <em>들쭉날쭉한 선</em> 일 뿐이에요. 하지만 조금 <strong>물러서서</strong> 보면
+        비슷한 모양이 반복된다는 걸 알 수 있습니다.
+      </p>
+
+      <div class="lead-quote">
+        "시장은 자기가 뭘 원하는지 말로 하지 않는다. 대신 <strong>그림</strong>으로 보여준다."
+      </div>
+
+      <p>
+        사람이 공포에 빠지면 비슷한 모양으로 팔고, 욕심이 나면 비슷한 모양으로 삽니다.
+        그 심리가 수십 년간 반복되면서 차트에 일정한 <strong>도형</strong>을 남기는 거예요.
+        우리가 "이중 바닥", "헤드앤숄더", "삼각 수렴" 같은 이름을 붙이는 건
+        그 도형을 알아보기 쉽게 이름표를 붙이는 행동일 뿐입니다.
+      </p>
+
+      <div class="info-grid">
+        <div class="info-card">
+          <h4>📐 패턴은 '지도'</h4>
+          <p>미래를 알려주는 점괘가 아니라, <strong>지금 어느 지형에 있는지</strong> 알려주는 지도입니다. 지도만으로 목적지에 도착하진 않지만, 절벽을 피할 순 있어요.</p>
+        </div>
+        <div class="info-card">
+          <h4>🎲 확률 게임</h4>
+          <p>"이중 바닥이 생기면 <strong>무조건</strong> 오른다"는 거짓말입니다. 실제로는 "그냥 랜덤보다 약간 높은 확률로 오른다" 정도예요. 그래서 <strong>여러 신호를 겹쳐</strong> 봅니다.</p>
+        </div>
+        <div class="info-card">
+          <h4>🧩 조각을 모으는 일</h4>
+          <p>이 가이드의 목표: 각 패턴이 주는 <strong>한 조각의 정보</strong>를 이해하고, 그 조각들이 한 곳에 모였을 때 왜 신뢰할 수 있는지 설명하는 것.</p>
+        </div>
+      </div>
+
+      <div class="callout tip">
+        <strong>이 가이드에서 '이중 바닥은 오른다' 같은 단정을 피하는 이유</strong>
+        패턴은 <em>확률적 우위</em>를 제공하지, 미래를 보장하지 않습니다. 이 문서는
+        "이런 상황에서는 <strong>사는 쪽에 더 유리할 수 있다</strong>" 같은 식으로 설명합니다.
+      </div>
+    </section>
+
+    <!-- ============================================================
+         CHAPTER 2 — 기본기
+    ============================================================ -->
+    <section class="chapter" id="ch2" data-reveal>
+      <h2><span class="chap-num">Chapter 2</span> 기본기 — 캔들 · 피벗 · 지지저항</h2>
+
+      <p>본격적인 패턴을 보기 전에 이 세 가지는 <strong>반드시</strong> 알고 있어야 합니다. 건물의 철근 같은 존재예요.</p>
+
+      <!-- 2.1 캔들 -->
+      <div class="pattern">
+        <div class="pattern-header">
+          <div class="pattern-title">
+            <h3>2.1 캔들 (Candlestick)</h3>
+            <span class="tone-badge neutral">기본</span>
+          </div>
+        </div>
+        <p class="hook">"한 시간 동안 가격이 어떻게 싸웠는지" 를 한 개의 양초 모양으로 기록한 것.</p>
+        <div class="pattern-body">
+          <div class="pattern-chart">
+            <svg viewBox="0 0 320 200" aria-label="캔들 구조 — 양봉/음봉 도식">
+              <!-- bg grid -->
+              <line x1="0" y1="100" x2="320" y2="100" stroke="var(--chart-grid)" stroke-dasharray="2 4"/>
+              <!-- bullish candle -->
+              <g>
+                <text x="70" y="20" fill="var(--positive)" font-size="12" text-anchor="middle" font-weight="600">양봉 (상승)</text>
+                <!-- wick -->
+                <line x1="70" y1="40" x2="70" y2="170" stroke="var(--chart-candle-up)" stroke-width="1.5"/>
+                <!-- body -->
+                <rect x="55" y="70" width="30" height="70" fill="var(--chart-candle-up)" rx="2"/>
+                <text x="110" y="50" fill="var(--text-secondary)" font-size="10">고가</text>
+                <text x="110" y="76" fill="var(--text-secondary)" font-size="10">종가</text>
+                <text x="110" y="146" fill="var(--text-secondary)" font-size="10">시가</text>
+                <text x="110" y="172" fill="var(--text-secondary)" font-size="10">저가</text>
+                <line x1="105" y1="46" x2="85" y2="40" stroke="var(--text-secondary)" stroke-width="0.5"/>
+                <line x1="105" y1="72" x2="85" y2="70" stroke="var(--text-secondary)" stroke-width="0.5"/>
+                <line x1="105" y1="142" x2="85" y2="140" stroke="var(--text-secondary)" stroke-width="0.5"/>
+                <line x1="105" y1="168" x2="85" y2="170" stroke="var(--text-secondary)" stroke-width="0.5"/>
+              </g>
+              <!-- bearish candle -->
+              <g transform="translate(150,0)">
+                <text x="70" y="20" fill="var(--negative)" font-size="12" text-anchor="middle" font-weight="600">음봉 (하락)</text>
+                <line x1="70" y1="50" x2="70" y2="180" stroke="var(--chart-candle-down)" stroke-width="1.5"/>
+                <rect x="55" y="80" width="30" height="70" fill="var(--chart-candle-down)" rx="2"/>
+                <text x="110" y="60" fill="var(--text-secondary)" font-size="10">고가</text>
+                <text x="110" y="86" fill="var(--text-secondary)" font-size="10">시가</text>
+                <text x="110" y="156" fill="var(--text-secondary)" font-size="10">종가</text>
+                <text x="110" y="182" fill="var(--text-secondary)" font-size="10">저가</text>
+              </g>
+            </svg>
+          </div>
+          <div class="pattern-detail">
+            <h4>한 줄 요약</h4>
+            <p>몸통의 <strong>색</strong> 은 시간 끝이 시작보다 올랐는지(초록) 내렸는지(빨강), <strong>길이</strong> 는 그 시간의 변동 폭을 나타냅니다.</p>
+            <h4>비유</h4>
+            <p>시험 한 시간이라고 해봅시다. 들어갈 때 70점으로 시작해서 (시가), 50점까지 떨어졌다가 (저가), 결국 80점으로 끝났다 (종가). 중간에 90점까지 맞춘 순간도 있었다 (고가). — 캔들 하나가 이 네 가지를 기억합니다.</p>
+            <h4>왜 중요한가</h4>
+            <ul>
+              <li><strong>긴 심지 (꼬리)</strong> — 그 방향으로 갔다가 되돌아왔다는 뜻. 반전 신호의 단서.</li>
+              <li><strong>작은 몸통</strong> — 사는 쪽과 파는 쪽이 <em>거의 비겼다</em>. 방향 결정 직전의 긴장감.</li>
+              <li><strong>큰 몸통</strong> — 한쪽이 압도. 그 방향으로 당분간 이어질 가능성.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2.2 피벗 -->
+      <div class="pattern">
+        <div class="pattern-header">
+          <div class="pattern-title">
+            <h3>2.2 피벗 고점·저점 (Pivot High / Low)</h3>
+            <span class="tone-badge neutral">기본</span>
+          </div>
+        </div>
+        <p class="hook">"주변보다 확실히 튀어나온 봉우리와 확실히 꺼진 구덩이" 만 고른 것.</p>
+        <div class="pattern-body">
+          <div class="pattern-chart">
+            <svg viewBox="0 0 320 200" aria-label="피벗 고점/저점 개념">
+              <!-- grid -->
+              <line x1="0" y1="50" x2="320" y2="50" stroke="var(--chart-grid)" stroke-dasharray="2 4"/>
+              <line x1="0" y1="150" x2="320" y2="150" stroke="var(--chart-grid)" stroke-dasharray="2 4"/>
+              <!-- zig-zag price line -->
+              <polyline points="10,140 40,80 70,100 100,40 130,110 160,70 190,150 220,90 250,160 280,100 310,130"
+                fill="none" stroke="var(--chart-line)" stroke-width="2"/>
+              <!-- highlight pivots -->
+              <circle cx="100" cy="40" r="6" fill="var(--positive)"/>
+              <text x="100" y="30" text-anchor="middle" fill="var(--positive)" font-size="10" font-weight="600">↑ 피벗 고점</text>
+              <circle cx="250" cy="160" r="6" fill="var(--negative)"/>
+              <text x="250" y="180" text-anchor="middle" fill="var(--negative)" font-size="10" font-weight="600">↓ 피벗 저점</text>
+              <!-- minor -->
+              <circle cx="160" cy="70" r="3" fill="var(--text-secondary)" opacity="0.5"/>
+              <circle cx="40" cy="80" r="3" fill="var(--text-secondary)" opacity="0.5"/>
+              <text x="160" y="60" text-anchor="middle" fill="var(--text-secondary)" font-size="9">(작은 봉우리는 무시)</text>
+            </svg>
+          </div>
+          <div class="pattern-detail">
+            <h4>한 줄 요약</h4>
+            <p>어떤 봉 주위 <strong>좌우 5개</strong> 를 봤을 때, 그 봉이 제일 높으면 '피벗 고점', 제일 낮으면 '피벗 저점'.</p>
+            <h4>비유</h4>
+            <p>산맥 지도를 그릴 때 모든 바위를 표시하지 않고 <strong>진짜 봉우리</strong> 만 점을 찍잖아요. 피벗은 그 "진짜 봉우리 / 진짜 계곡" 만 뽑아낸 것.</p>
+            <h4>왜 중요한가</h4>
+            <ul>
+              <li>대부분의 패턴은 "피벗 2개로 이중 천장" 식으로 <strong>피벗끼리 연결</strong>해서 만들어집니다.</li>
+              <li>잡음(작은 움직임)을 걸러주어 <strong>정말 중요한 구조</strong>만 보이게 합니다.</li>
+              <li>우리 코드 (<code>detectPivots(candles, 5, 5)</code>) 도 좌우 5봉 기준을 써요.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2.3 지지/저항 -->
+      <div class="pattern">
+        <div class="pattern-header">
+          <div class="pattern-title">
+            <h3>2.3 지지선 · 저항선 (Support / Resistance)</h3>
+            <span class="tone-badge neutral">기본</span>
+          </div>
+        </div>
+        <p class="hook">"예전에 사람들이 많이 사고 팔던 가격대" — 천장과 바닥 역할을 하는 선.</p>
+        <div class="pattern-body">
+          <div class="pattern-chart">
+            <svg viewBox="0 0 320 200" aria-label="지지선과 저항선">
+              <!-- resistance line -->
+              <line x1="10" y1="50" x2="310" y2="50" stroke="var(--negative)" stroke-width="1.5" stroke-dasharray="6 3"/>
+              <text x="15" y="42" fill="var(--negative)" font-size="11" font-weight="600">저항선 (천장)</text>
+              <!-- support line -->
+              <line x1="10" y1="150" x2="310" y2="150" stroke="var(--positive)" stroke-width="1.5" stroke-dasharray="6 3"/>
+              <text x="15" y="168" fill="var(--positive)" font-size="11" font-weight="600">지지선 (바닥)</text>
+              <!-- bouncing price -->
+              <polyline points="10,120 40,55 70,110 100,52 130,140 160,58 190,145 220,100 250,148 280,90 310,130"
+                fill="none" stroke="var(--chart-line)" stroke-width="2"/>
+              <!-- touches -->
+              <circle cx="40" cy="55" r="4" fill="var(--negative)" opacity="0.7"/>
+              <circle cx="100" cy="52" r="4" fill="var(--negative)" opacity="0.7"/>
+              <circle cx="160" cy="58" r="4" fill="var(--negative)" opacity="0.7"/>
+              <circle cx="130" cy="140" r="4" fill="var(--positive)" opacity="0.7"/>
+              <circle cx="190" cy="145" r="4" fill="var(--positive)" opacity="0.7"/>
+              <circle cx="250" cy="148" r="4" fill="var(--positive)" opacity="0.7"/>
+            </svg>
+          </div>
+          <div class="pattern-detail">
+            <h4>한 줄 요약</h4>
+            <p><strong>저항선</strong> — 가격이 올라와서 여러 번 막혔던 가격. <strong>지지선</strong> — 가격이 내려가서 여러 번 버텼던 가격.</p>
+            <h4>비유</h4>
+            <p>엘리베이터가 10층에서 계속 멈춘다면 10층에 <strong>보이지 않는 천장</strong> 이 있는 겁니다. 여러 번 부딪힌 자리는 다음에도 멈출 확률이 높아요.</p>
+            <h4>왜 중요한가</h4>
+            <ul>
+              <li>대부분의 패턴 (이중 바닥·삼각형·박스권) 은 이 선들이 만드는 <strong>프레임</strong> 위에 그려집니다.</li>
+              <li>한 번 돌파되면 <strong>역할이 바뀝니다</strong> — 저항이 돌파되면 그 선이 지지선이 돼요 (플립).</li>
+              <li>여러 번 터치될수록 <strong>더 신뢰도 있는 선</strong> 으로 평가합니다 (뒤에 나올 컨플루언스 점수의 재료).</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         CHAPTER 3 — 컨플루언스 존 (핵심)
+    ============================================================ -->
+    <section class="chapter" id="ch3" data-reveal>
+      <h2><span class="chap-num">Chapter 3</span> 컨플루언스 존 — 이 프로젝트의 핵심</h2>
+
+      <div class="lead-quote">
+        "하나의 신호는 소음. 세 개가 같은 곳을 가리키면 그건 <strong>증거</strong>."
+      </div>
+
+      <p>
+        <strong>컨플루언스 (Confluence)</strong> 는 "여러 강이 한 곳으로 합쳐지는 지점" 을 뜻합니다.
+        차트에서는 <strong>서로 다른 신호 여러 개가 같은 가격대에서 겹치는 구간</strong> 을 가리키죠.
+        우리 대시보드가 알림을 보내는 기준이 바로 이거예요.
+      </p>
+
+      <!-- 3.1 구성 요소 -->
+      <h3 style="margin-top: 36px;">3.1 컨플루언스 존은 어떻게 만들어지나</h3>
+
+      <div class="pattern-chart" style="max-width: 620px; margin: 24px 0;">
+        <svg viewBox="0 0 620 260" aria-label="컨플루언스 존 형성 개념도">
+          <!-- zone highlight -->
+          <rect x="0" y="105" width="620" height="40" fill="var(--chart-highlight)"/>
+          <text x="10" y="100" font-size="11" fill="var(--warning)" font-weight="600">🎯 컨플루언스 존 (여러 신호가 겹침)</text>
+          <!-- price line -->
+          <polyline points="10,50 60,180 110,110 160,200 210,120 260,190 310,130 360,210 410,130 460,200 510,125 560,190 610,140"
+            fill="none" stroke="var(--chart-line)" stroke-width="2"/>
+          <!-- signal dots -->
+          <circle cx="100" cy="125" r="7" fill="var(--positive)"/>
+          <text x="100" y="260" text-anchor="middle" font-size="10" fill="var(--text-secondary)">지지선</text>
+          <circle cx="220" cy="125" r="7" fill="var(--accent)"/>
+          <text x="220" y="260" text-anchor="middle" font-size="10" fill="var(--text-secondary)">Fib 0.618</text>
+          <circle cx="340" cy="125" r="7" fill="var(--accent-secondary)"/>
+          <text x="340" y="260" text-anchor="middle" font-size="10" fill="var(--text-secondary)">Elliott W3</text>
+          <circle cx="460" cy="125" r="7" fill="var(--warning)"/>
+          <text x="460" y="260" text-anchor="middle" font-size="10" fill="var(--text-secondary)">POC (거래량 중심)</text>
+          <circle cx="580" cy="125" r="7" fill="var(--negative)"/>
+          <text x="580" y="260" text-anchor="middle" font-size="10" fill="var(--text-secondary)">이중 바닥 넥라인</text>
+          <!-- legend -->
+          <text x="10" y="20" font-size="12" fill="var(--text)" font-weight="600">5개 서로 다른 신호가 같은 가격대 → Strength 95</text>
+        </svg>
+      </div>
+
+      <p>
+        위 그림에서 <strong>노란 띠</strong> 가 컨플루언스 존입니다. 그 안에 지지선, 피보나치,
+        엘리엇 파동 3파, 거래량 중심 (POC), 이중 바닥 넥라인 — <strong>총 5가지 이유</strong>로 같은
+        가격대가 중요하다고 말하고 있어요. 하나만 있었다면 우연일 수 있지만, 5개가 겹치면
+        "여기서 뭔가 일어날 확률이 높다" 고 판단할 수 있습니다.
+      </p>
+
+      <div class="info-grid">
+        <div class="info-card">
+          <h4>🧲 레벨 수집 (collectLevels)</h4>
+          <p>12종 신호에서 중요한 가격들을 모두 뽑습니다 — 지지/저항, 피보, 엘리엇, POC, 패턴 넥라인, 이전 고·저점 등.</p>
+        </div>
+        <div class="info-card">
+          <h4>🎛️ 가격 클러스터링</h4>
+          <p>뽑힌 레벨들을 <strong>가까운 가격끼리 묶어서</strong> "같은 구역" 으로 봅니다. 0.3% 이내면 같은 존.</p>
+        </div>
+        <div class="info-card">
+          <h4>🧮 스코어링</h4>
+          <p>한 존 안에 몇 개의 신호가 들어있는지 + 그 신호들의 가중치로 <strong>0~100 점수</strong> 를 매깁니다.</p>
+        </div>
+      </div>
+
+      <!-- 3.2 점수 -->
+      <h3 style="margin-top: 36px;">3.2 Strength (강도) — 0부터 100까지</h3>
+
+      <p>Strength 는 "이 존이 얼마나 단단한가" 를 한 숫자로 요약한 겁니다. 대략 이런 구조예요:</p>
+
+      <ul style="padding-left: 1rem; margin: 16px 0;">
+        <li><strong>신호 개수 가중치</strong> — 한 존에 겹친 신호의 수 (많을수록 가점)</li>
+        <li><strong>신호 다양성</strong> — 지지선만 여러 개보다, 지지선 + 피보 + POC 가 더 강함</li>
+        <li><strong>최근성</strong> — 100일 전 고점보다 3일 전 고점이 더 관련 있음</li>
+        <li><strong>터치 횟수</strong> — 과거에 그 가격대가 몇 번이나 의미 있었는지</li>
+        <li><strong>거래량</strong> — 그 구간에서 실제로 얼마나 많이 거래됐는지</li>
+      </ul>
+
+      <div class="callout">
+        <strong>Strength ≥ 60 — '프리컷' 통과</strong>
+        점수가 60 미만인 존은 일단 무시합니다. ML 모델 같은 비싼 판단을 하기 전에 명백히 약한 후보를 버리는 단계예요.
+      </div>
+
+      <!-- 3.3 티어 -->
+      <h3 style="margin-top: 36px;">3.3 S / A / B 티어 — ML 확률이 판정한다</h3>
+
+      <p>
+        프리컷을 통과한 존은 <strong>XGBoost</strong> 라는 머신러닝 모델이 본 다음,
+        "이 존에서 실제로 100봉 안에 가격이 터치할 확률 (p_cal)" 을 계산합니다.
+        그 확률 + 룰 조건을 조합해서 티어가 정해져요.
+      </p>
+
+      <div class="tier-row">
+        <div class="tier-badge s">🟢 S</div>
+        <div>
+          <h4>p_cal ≥ 0.85 &nbsp;AND&nbsp; Strength ≥ 80</h4>
+          <p>ML 도 "여기 확실하다" 고 하고, 룰도 "신호 많다" 고 하는 <strong>최상급 확신 셋업</strong>. 가장 신중하게 반응할 가치가 있는 알림.</p>
+        </div>
+      </div>
+      <div class="tier-row">
+        <div class="tier-badge a">🔵 A</div>
+        <div>
+          <h4>p_cal ≥ 0.80 &nbsp;AND&nbsp; Strength ≥ 70</h4>
+          <p>ML 이 높은 확률을 주고, 룰은 최소한 확인해 주는 수준. 상당히 신뢰할 수 있는 셋업.</p>
+        </div>
+      </div>
+      <div class="tier-row">
+        <div class="tier-badge b">⚪ B</div>
+        <div>
+          <h4>p_cal ≥ 0.70 &nbsp;AND&nbsp; Strength ≥ 70 &nbsp;AND&nbsp; Signals ≥ 3</h4>
+          <p>ML 은 반신반의. 대신 룰이 조건을 모두 만족해서 "한번 보고 가자" 는 참고용 티어.</p>
+        </div>
+      </div>
+
+      <div class="callout warn">
+        <strong>왜 이중 필터를 쓰나?</strong>
+        ML 혼자만 쓰면 확률은 높다지만 말이 안 되는 위치에서도 알림이 올 수 있어요.
+        룰 혼자만 쓰면 옛날 데이터에 과적합(overfitting) 됩니다. 두 관점이 동시에 동의할 때 알림을 보내는 게 가장 안정적이에요.
+      </div>
+
+      <h3 style="margin-top: 36px;">3.4 대시보드에서 이 정보를 어디서 보나</h3>
+      <div class="info-grid">
+        <div class="info-card">
+          <h4>📈 메인 차트</h4>
+          <p>컨플루언스 존은 <strong>노란색 / 파란색 밴드</strong> 로 차트 위에 그려집니다. 두께는 존의 폭 (zoneTop - zoneBottom).</p>
+        </div>
+        <div class="info-card">
+          <h4>📋 우측 패널</h4>
+          <p>존 리스트가 티어별 이모지와 함께 나열됩니다. 클릭하면 존 상세 모달이 열려요.</p>
+        </div>
+        <div class="info-card">
+          <h4>🔔 알림</h4>
+          <p><code>launchd</code> 데몬이 30분마다 검사해서 <strong>S · A · B</strong> 티어만 macOS 알림으로 보냅니다.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         CHAPTER 4 — 반전 패턴
+    ============================================================ -->
+    <section class="chapter" id="ch4" data-reveal>
+      <h2><span class="chap-num">Chapter 4</span> 반전 패턴 — 흐름이 바뀌는 신호</h2>
+      <p>올라가던 흐름이 내려가거나, 내려가던 흐름이 올라갈 조짐을 보이는 패턴들. 천장과 바닥을 감지하는 전통적 도구입니다.</p>
+
+      <!-- Double Top -->
+      <div class="pattern">
+        <div class="pattern-header">
+          <div class="pattern-title">
+            <h3>Double Top (이중 천장)</h3>
+            <span class="tone-badge down">약세 반전</span>
+            <span class="tone-badge reversal">Reversal</span>
+          </div>
+        </div>
+        <p class="hook">"두 번 두드렸는데 뚫지 못한 천장" — 세 번째엔 포기한다.</p>
+        <div class="pattern-body">
+          <div class="pattern-chart">
+            <svg viewBox="0 0 320 200" aria-label="이중 천장 패턴">
+              <line x1="10" y1="130" x2="310" y2="130" stroke="var(--warning)" stroke-width="1.5" stroke-dasharray="5 3"/>
+              <text x="10" y="148" fill="var(--warning)" font-size="10" font-weight="600">넥라인 (이탈 시 하락 확정)</text>
+              <polyline points="10,170 60,40 110,130 160,42 210,135 260,165 300,180" fill="none" stroke="var(--chart-line)" stroke-width="2"/>
+              <circle cx="60" cy="40" r="5" fill="var(--negative)"/>
+              <circle cx="160" cy="42" r="5" fill="var(--negative)"/>
+              <text x="60" y="30" text-anchor="middle" font-size="10" fill="var(--negative)" font-weight="600">고점 1</text>
+              <text x="160" y="32" text-anchor="middle" font-size="10" fill="var(--negative)" font-weight="600">고점 2</text>
+              <defs>
+                <marker id="arrDown" viewBox="0 0 10 10" refX="5" refY="9" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L5,10 L10,0" fill="var(--negative)"/></marker>
+                <marker id="arrUp" viewBox="0 0 10 10" refX="5" refY="1" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,10 L5,0 L10,10" fill="var(--positive)"/></marker>
+              </defs>
+              <path d="M260,135 L260,175" stroke="var(--negative)" stroke-width="1.5" marker-end="url(#arrDown)"/>
+              <text x="275" y="160" font-size="10" fill="var(--negative)">이탈</text>
+            </svg>
+          </div>
+          <div class="pattern-detail">
+            <h4>한 줄 요약</h4>
+            <p>비슷한 가격에서 <strong>두 번</strong> 고점을 만든 후, 두 고점 사이 저점 (넥라인) 을 <strong>깨고 내려가면</strong> 하락 전환.</p>
+            <h4>비유</h4>
+            <p>문을 두 번 세게 두드렸는데도 안 열리면 포기하고 돌아가잖아요. 두 번 공략했는데 못 뚫은 저항선은 "이번엔 못 뚫는다" 는 증거로 받아들여집니다.</p>
+            <h4>왜 생기나</h4>
+            <p>상승장에서 기관이 <strong>분할 매도</strong> 할 때 전형적인 모양. 첫 고점에서 일부 팔고, 반등 시 비슷한 가격에 나머지를 마저 파는 거예요.</p>
+          </div>
+        </div>
+        <div class="trade-plan">
+          <div class="tp-item"><span class="tp-label">진입</span><span class="tp-val">넥라인 <strong>깨고 종가 마감</strong> 시 숏/청산</span></div>
+          <div class="tp-item"><span class="tp-label">손절</span><span class="tp-val">두 번째 고점 위 (ATR 여유)</span></div>
+          <div class="tp-item"><span class="tp-label">목표</span><span class="tp-val">넥라인 − (고점 − 넥라인) 대칭 거리</span></div>
+        </div>
+      </div>
+
+      <!-- Double Bottom -->
+      <div class="pattern">
+        <div class="pattern-header">
+          <div class="pattern-title">
+            <h3>Double Bottom (이중 바닥)</h3>
+            <span class="tone-badge up">강세 반전</span>
+            <span class="tone-badge reversal">Reversal</span>
+          </div>
+        </div>
+        <p class="hook">"두 번 바닥을 찍었지만 더 깊어지지 않았다" — 공포가 소진된 신호.</p>
+        <div class="pattern-body">
+          <div class="pattern-chart">
+            <svg viewBox="0 0 320 200" aria-label="이중 바닥 패턴">
+              <line x1="10" y1="70" x2="310" y2="70" stroke="var(--warning)" stroke-width="1.5" stroke-dasharray="5 3"/>
+              <text x="10" y="62" fill="var(--warning)" font-size="10" font-weight="600">넥라인 (돌파 시 상승 확정)</text>
+              <polyline points="10,30 60,160 110,70 160,158 210,65 260,35 300,20" fill="none" stroke="var(--chart-line)" stroke-width="2"/>
+              <circle cx="60" cy="160" r="5" fill="var(--positive)"/>
+              <circle cx="160" cy="158" r="5" fill="var(--positive)"/>
+              <text x="60" y="180" text-anchor="middle" font-size="10" fill="var(--positive)" font-weight="600">저점 1</text>
+              <text x="160" y="180" text-anchor="middle" font-size="10" fill="var(--positive)" font-weight="600">저점 2</text>
+              <path d="M260,65 L260,25" stroke="var(--positive)" stroke-width="1.5" marker-end="url(#arrUp)"/>
+              <text x="275" y="45" font-size="10" fill="var(--positive)">돌파</text>
+            </svg>
+          </div>
+          <div class="pattern-detail">
+            <h4>한 줄 요약</h4>
+            <p>비슷한 가격에서 <strong>두 번</strong> 저점을 만든 후, 두 저점 사이 고점 (넥라인) 을 <strong>돌파하면</strong> 상승 전환.</p>
+            <h4>비유</h4>
+            <p>떨어지던 돌이 두 번째 튕길 때 같은 높이에서 튀어올랐다면, 바닥이 단단하다는 뜻. 팔 사람들이 다 팔았고 이제는 살 사람만 남은 거예요.</p>
+            <h4>주의</h4>
+            <ul>
+              <li>두 번째 저점이 <strong>훨씬 얕아야</strong> 진짜 반전 (V자형보다 U자형이 더 신뢰).</li>
+              <li>넥라인 돌파 시 <strong>거래량 증가</strong> 가 동반되어야 — 거래량 없는 돌파는 페이크아웃 위험.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="trade-plan">
+          <div class="tp-item"><span class="tp-label">진입</span><span class="tp-val">넥라인 <strong>돌파 종가 마감</strong> 시 롱</span></div>
+          <div class="tp-item"><span class="tp-label">손절</span><span class="tp-val">두 번째 저점 아래</span></div>
+          <div class="tp-item"><span class="tp-label">목표</span><span class="tp-val">넥라인 + (넥라인 − 저점)</span></div>
+        </div>
+      </div>
+
+      <!-- Head & Shoulders -->
+      <div class="pattern">
+        <div class="pattern-header">
+          <div class="pattern-title">
+            <h3>Head &amp; Shoulders (헤드앤숄더)</h3>
+            <span class="tone-badge down">약세 반전</span>
+            <span class="tone-badge reversal">Reversal</span>
+          </div>
+        </div>
+        <p class="hook">"양 어깨 사이에 머리가 튀어나온 사람 실루엣" — 세 번 쳤지만 결국 꺾이는 흐름.</p>
+        <div class="pattern-body">
+          <div class="pattern-chart">
+            <svg viewBox="0 0 320 200" aria-label="헤드앤숄더 패턴">
+              <line x1="10" y1="130" x2="310" y2="130" stroke="var(--warning)" stroke-width="1.5" stroke-dasharray="5 3"/>
+              <text x="10" y="148" fill="var(--warning)" font-size="10" font-weight="600">넥라인</text>
+              <polyline points="10,170 50,70 90,130 135,30 185,130 225,70 270,145 300,175" fill="none" stroke="var(--chart-line)" stroke-width="2"/>
+              <circle cx="50" cy="70" r="4" fill="var(--negative)" opacity="0.6"/>
+              <circle cx="135" cy="30" r="5" fill="var(--negative)"/>
+              <circle cx="225" cy="70" r="4" fill="var(--negative)" opacity="0.6"/>
+              <text x="50" y="60" text-anchor="middle" font-size="10" fill="var(--text-secondary)">왼쪽 어깨</text>
+              <text x="135" y="20" text-anchor="middle" font-size="10" fill="var(--negative)" font-weight="600">머리</text>
+              <text x="225" y="60" text-anchor="middle" font-size="10" fill="var(--text-secondary)">오른쪽 어깨</text>
+              <path d="M270,140 L270,175" stroke="var(--negative)" stroke-width="1.5" marker-end="url(#arrDown)"/>
+            </svg>
+          </div>
+          <div class="pattern-detail">
+            <h4>한 줄 요약</h4>
+            <p>세 개의 봉우리 — 가운데 (머리) 가 제일 높고, 양쪽 (어깨) 는 비슷한 높이. 넥라인 이탈 시 하락 전환.</p>
+            <h4>비유</h4>
+            <p>마지막 안간힘을 쓰며 고점을 갱신한 (머리) 뒤, 두 번째 시도 (오른쪽 어깨) 는 이전 고점조차 못 뚫었어요. 에너지가 <strong>줄어들고 있다</strong> 는 명백한 증거.</p>
+            <h4>왜 강력한가</h4>
+            <ul>
+              <li>고점 3개 중 <strong>2개가 실패</strong> — 이중 천장보다 증거가 풍부.</li>
+              <li>주요 반전 패턴 중 <strong>적중률이 가장 높다</strong> 고 알려진 패턴.</li>
+              <li>하락 목표는 전형적으로 "머리 − 넥라인" 거리만큼.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="trade-plan">
+          <div class="tp-item"><span class="tp-label">진입</span><span class="tp-val">넥라인 이탈 + 되돌림 테스트 후 숏</span></div>
+          <div class="tp-item"><span class="tp-label">손절</span><span class="tp-val">오른쪽 어깨 고점 위</span></div>
+          <div class="tp-item"><span class="tp-label">목표</span><span class="tp-val">넥라인 − (머리 − 넥라인)</span></div>
+        </div>
+      </div>
+
+      <!-- Inverse H&S -->
+      <div class="pattern">
+        <div class="pattern-header">
+          <div class="pattern-title">
+            <h3>Inverse Head &amp; Shoulders (역헤드앤숄더)</h3>
+            <span class="tone-badge up">강세 반전</span>
+            <span class="tone-badge reversal">Reversal</span>
+          </div>
+        </div>
+        <p class="hook">헤드앤숄더를 <strong>뒤집은</strong> 모양. 하락이 멈추고 상승 전환되는 전형적 바닥 패턴.</p>
+        <div class="pattern-body">
+          <div class="pattern-chart">
+            <svg viewBox="0 0 320 200" aria-label="역헤드앤숄더 패턴">
+              <line x1="10" y1="70" x2="310" y2="70" stroke="var(--warning)" stroke-width="1.5" stroke-dasharray="5 3"/>
+              <text x="10" y="62" fill="var(--warning)" font-size="10" font-weight="600">넥라인</text>
+              <polyline points="10,30 50,130 90,70 135,170 185,70 225,130 270,55 300,25" fill="none" stroke="var(--chart-line)" stroke-width="2"/>
+              <circle cx="50" cy="130" r="4" fill="var(--positive)" opacity="0.6"/>
+              <circle cx="135" cy="170" r="5" fill="var(--positive)"/>
+              <circle cx="225" cy="130" r="4" fill="var(--positive)" opacity="0.6"/>
+              <text x="50" y="145" text-anchor="middle" font-size="10" fill="var(--text-secondary)">왼쪽 어깨</text>
+              <text x="135" y="188" text-anchor="middle" font-size="10" fill="var(--positive)" font-weight="600">머리 (최저)</text>
+              <text x="225" y="145" text-anchor="middle" font-size="10" fill="var(--text-secondary)">오른쪽 어깨</text>
+              <path d="M270,65 L270,25" stroke="var(--positive)" stroke-width="1.5" marker-end="url(#arrUp)"/>
+            </svg>
+          </div>
+          <div class="pattern-detail">
+            <h4>한 줄 요약</h4>
+            <p>세 개의 저점 — 가운데 (머리) 가 제일 낮고, 양쪽 (어깨) 는 비슷한 수준. 넥라인 돌파 시 상승 전환.</p>
+            <h4>비유</h4>
+            <p>잠수함이 가장 깊은 해저까지 내려갔다가, 두 번째 잠수할 때는 그만큼 깊이 못 들어갔어요. <strong>하강 엔진이 약해지고 있다</strong> 는 증거.</p>
+            <h4>체크 포인트</h4>
+            <ul>
+              <li>머리 대비 양 어깨는 <strong>얕은 편</strong> 이 이상적.</li>
+              <li>오른쪽 어깨에서 <strong>거래량 감소</strong>, 돌파 시 <strong>폭발적 증가</strong>.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="trade-plan">
+          <div class="tp-item"><span class="tp-label">진입</span><span class="tp-val">넥라인 돌파 + 되돌림 테스트 후 롱</span></div>
+          <div class="tp-item"><span class="tp-label">손절</span><span class="tp-val">오른쪽 어깨 저점 아래</span></div>
+          <div class="tp-item"><span class="tp-label">목표</span><span class="tp-val">넥라인 + (넥라인 − 머리)</span></div>
+        </div>
+      </div>
+
+      <!-- Bullish Divergence -->
+      <div class="pattern">
+        <div class="pattern-header">
+          <div class="pattern-title">
+            <h3>Bullish Divergence (강세 다이버전스)</h3>
+            <span class="tone-badge up">강세 반전</span>
+            <span class="tone-badge reversal">Reversal</span>
+          </div>
+        </div>
+        <p class="hook">"가격은 더 낮은 저점을 만드는데, RSI 는 더 <strong>높은 저점</strong> 을 만든다" — 하락 엔진이 약해지고 있다는 증거.</p>
+        <div class="pattern-body">
+          <div class="pattern-chart">
+            <svg viewBox="0 0 320 200" aria-label="강세 다이버전스 — 가격 LL vs RSI HL">
+              <!-- Price panel (top) -->
+              <text x="12" y="16" font-size="10" fill="var(--text-secondary)" font-weight="600">가격</text>
+              <polyline points="10,50 45,80 80,45 115,95 150,60 185,110 220,70 255,120" fill="none" stroke="var(--chart-line)" stroke-width="2"/>
+              <circle cx="115" cy="95" r="4" fill="var(--positive)"/>
+              <circle cx="255" cy="120" r="5" fill="var(--positive)"/>
+              <line x1="115" y1="95" x2="255" y2="120" stroke="var(--positive)" stroke-width="1.2" stroke-dasharray="4 3"/>
+              <text x="115" y="88" text-anchor="middle" font-size="9" fill="var(--positive)">저점 1</text>
+              <text x="255" y="140" text-anchor="middle" font-size="9" fill="var(--positive)" font-weight="700">저점 2 (더 깊음)</text>
+              <!-- separator -->
+              <line x1="0" y1="145" x2="320" y2="145" stroke="var(--border)" stroke-width="1"/>
+              <!-- RSI panel (bottom) -->
+              <text x="12" y="160" font-size="10" fill="var(--text-secondary)" font-weight="600">RSI</text>
+              <polyline points="10,160 45,170 80,157 115,185 150,170 185,178 220,168 255,170" fill="none" stroke="var(--accent)" stroke-width="2"/>
+              <circle cx="115" cy="185" r="4" fill="var(--warning)"/>
+              <circle cx="255" cy="170" r="5" fill="var(--warning)"/>
+              <line x1="115" y1="185" x2="255" y2="170" stroke="var(--warning)" stroke-width="1.2" stroke-dasharray="4 3"/>
+              <text x="115" y="198" text-anchor="middle" font-size="9" fill="var(--warning)">RSI 저점 1</text>
+              <text x="255" y="163" text-anchor="middle" font-size="9" fill="var(--warning)" font-weight="700">RSI 저점 2 (더 얕음)</text>
+            </svg>
+          </div>
+          <div class="pattern-detail">
+            <h4>한 줄 요약</h4>
+            <p>가격은 <strong>Lower Low</strong> (신저점) 을 찍었는데, RSI 는 <strong>Higher Low</strong> (더 얕은 저점) 을 만든 상태 — 모멘텀이 가격의 하락을 못 따라가고 있다는 뜻.</p>
+            <h4>비유</h4>
+            <p>무거운 짐을 끌던 사람이 두 번째에는 힘이 빠져서 <strong>같은 속도로 못 달리는</strong> 상황. 겉으로는 앞으로 가고 있지만, 에너지는 이미 바닥났어요.</p>
+            <h4>왜 중요한가</h4>
+            <ul>
+              <li>매도 세력의 <strong>힘 소진</strong> 을 보여주는 선행 신호.</li>
+              <li>지지선/피보 0.618/POC 같은 <strong>핵심 레벨</strong> 에서 다이버전스가 걸리면 신뢰도 급상승.</li>
+              <li>단, 다이버전스는 <strong>타이밍 지표가 아님</strong> — 추세가 실제로 꺾일 때까지는 수 봉~수십 봉 걸릴 수 있음.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="trade-plan">
+          <div class="tp-item"><span class="tp-label">진입</span><span class="tp-val">다이버전스 확인 + 상승 캔들 확정 시 롱</span></div>
+          <div class="tp-item"><span class="tp-label">손절</span><span class="tp-val">RSI 저점 2 의 가격 아래</span></div>
+          <div class="tp-item"><span class="tp-label">목표</span><span class="tp-val">직전 고점 또는 주요 저항 존</span></div>
+        </div>
+      </div>
+
+      <!-- Bearish Divergence -->
+      <div class="pattern">
+        <div class="pattern-header">
+          <div class="pattern-title">
+            <h3>Bearish Divergence (약세 다이버전스)</h3>
+            <span class="tone-badge down">약세 반전</span>
+            <span class="tone-badge reversal">Reversal</span>
+          </div>
+        </div>
+        <p class="hook">"가격은 더 높은 고점을 만드는데, RSI 는 더 <strong>낮은 고점</strong> 을 만든다" — 상승 엔진이 식어가고 있다는 조기 경보.</p>
+        <div class="pattern-body">
+          <div class="pattern-chart">
+            <svg viewBox="0 0 320 200" aria-label="약세 다이버전스 — 가격 HH vs RSI LH">
+              <!-- Price panel -->
+              <text x="12" y="16" font-size="10" fill="var(--text-secondary)" font-weight="600">가격</text>
+              <polyline points="10,110 45,80 80,115 115,60 150,100 185,50 220,95 255,30" fill="none" stroke="var(--chart-line)" stroke-width="2"/>
+              <circle cx="115" cy="60" r="4" fill="var(--negative)"/>
+              <circle cx="255" cy="30" r="5" fill="var(--negative)"/>
+              <line x1="115" y1="60" x2="255" y2="30" stroke="var(--negative)" stroke-width="1.2" stroke-dasharray="4 3"/>
+              <text x="115" y="54" text-anchor="middle" font-size="9" fill="var(--negative)">고점 1</text>
+              <text x="255" y="22" text-anchor="middle" font-size="9" fill="var(--negative)" font-weight="700">고점 2 (더 높음)</text>
+              <!-- separator -->
+              <line x1="0" y1="145" x2="320" y2="145" stroke="var(--border)" stroke-width="1"/>
+              <!-- RSI panel -->
+              <text x="12" y="160" font-size="10" fill="var(--text-secondary)" font-weight="600">RSI</text>
+              <polyline points="10,175 45,168 80,175 115,160 150,170 185,167 220,176 255,172" fill="none" stroke="var(--accent)" stroke-width="2"/>
+              <circle cx="115" cy="160" r="4" fill="var(--warning)"/>
+              <circle cx="255" cy="172" r="5" fill="var(--warning)"/>
+              <line x1="115" y1="160" x2="255" y2="172" stroke="var(--warning)" stroke-width="1.2" stroke-dasharray="4 3"/>
+              <text x="115" y="155" text-anchor="middle" font-size="9" fill="var(--warning)">RSI 고점 1</text>
+              <text x="255" y="188" text-anchor="middle" font-size="9" fill="var(--warning)" font-weight="700">RSI 고점 2 (더 낮음)</text>
+            </svg>
+          </div>
+          <div class="pattern-detail">
+            <h4>한 줄 요약</h4>
+            <p>가격은 <strong>Higher High</strong> (신고점) 을 찍었는데, RSI 는 <strong>Lower High</strong> (더 낮은 고점) 을 만든 상태 — 매수세는 계속되지만 <em>갈수록 힘이 빠지고 있어요</em>.</p>
+            <h4>비유</h4>
+            <p>계단을 뛰어올라가는데 두 번째 시도에서 숨이 더 찬다면 — 겉으로는 더 높이 올라갔지만 <strong>체력은 먼저 고갈</strong> 된 상태. 다음 한 걸음이 무너질 가능성.</p>
+            <h4>강력한 조합</h4>
+            <ul>
+              <li>주요 저항선 또는 피보 0.618 에서 <strong>약세 다이버전스 + 음봉 마감</strong> → 높은 확률의 숏 셋업.</li>
+              <li>RSI 가 <strong>과매수 영역 (≥70)</strong> 에서 발생하면 신뢰도 한 단계 상승.</li>
+              <li>반드시 <strong>종가 기준</strong> 으로 다이버전스 여부를 판단 — 꼬리만 보고 잡으면 페이크.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="trade-plan">
+          <div class="tp-item"><span class="tp-label">진입</span><span class="tp-val">다이버전스 확인 + 하락 캔들 확정 시 숏</span></div>
+          <div class="tp-item"><span class="tp-label">손절</span><span class="tp-val">RSI 고점 2 의 가격 위</span></div>
+          <div class="tp-item"><span class="tp-label">목표</span><span class="tp-val">직전 저점 또는 주요 지지 존</span></div>
+        </div>
+      </div>
+
+      <div class="callout tip">
+        <strong>💡 다이버전스는 '확인' 이 아니라 '경고'</strong>
+        다이버전스 자체가 매매 신호는 아니에요. "지금 추세의 <em>기운이 빠지고 있다</em>" 는 <strong>조기 경보</strong> 일 뿐.
+        반드시 <em>가격 자체의 반전 캔들 (engulfing / 장대봉) 또는 주요 레벨 이탈</em> 을 확인한 뒤 진입하세요.
+        이 대시보드에서도 다이버전스는 단독으로는 약한 신호이고, <strong>컨플루언스 존의 한 재료</strong> 로 사용됩니다.
+      </div>
+    </section>
+
+    <!-- ============================================================
+         CHAPTER 5 — 지속 패턴
+    ============================================================ -->
+    <section class="chapter" id="ch5" data-reveal>
+      <h2><span class="chap-num">Chapter 5</span> 지속 패턴 — 잠깐 쉬고 같은 방향으로 간다</h2>
+      <p>추세가 끝나는 게 아니라 <strong>잠시 숨을 고르는 구간</strong>. 끝나면 원래 가던 방향으로 다시 출발할 가능성이 높은 패턴들.</p>
+
+      <!-- Ascending Triangle -->
+      <div class="pattern">
+        <div class="pattern-header">
+          <div class="pattern-title">
+            <h3>Ascending Triangle (상승 삼각)</h3>
+            <span class="tone-badge up">강세</span>
+            <span class="tone-badge continuation">Continuation</span>
+          </div>
+        </div>
+        <p class="hook">"천장은 그대로인데, 바닥이 자꾸 올라온다" — 사려는 힘이 쌓이고 있다는 뜻.</p>
+        <div class="pattern-body">
+          <div class="pattern-chart">
+            <svg viewBox="0 0 320 200" aria-label="상승 삼각 패턴">
+              <line x1="10" y1="50" x2="310" y2="50" stroke="var(--negative)" stroke-width="1.5" stroke-dasharray="5 3"/>
+              <line x1="10" y1="170" x2="310" y2="90" stroke="var(--positive)" stroke-width="1.5"/>
+              <polyline points="10,170 40,55 70,140 100,55 130,115 160,58 190,95 220,60 260,35 300,15" fill="none" stroke="var(--chart-line)" stroke-width="2"/>
+              <text x="15" y="42" fill="var(--negative)" font-size="10" font-weight="600">수평 저항선</text>
+              <text x="15" y="185" fill="var(--positive)" font-size="10" font-weight="600">상승 지지선</text>
+            </svg>
+          </div>
+          <div class="pattern-detail">
+            <h4>한 줄 요약</h4>
+            <p>고점은 수평 (같은 저항), 저점은 계속 올라감. 결국 <strong>위로 돌파</strong> 할 확률이 높음.</p>
+            <h4>비유</h4>
+            <p>엘리베이터가 10층에서 막히는데 <strong>사람이 계속 타서</strong> 내부 압력이 높아지는 상황. 결국 문이 열리고 위로 갑니다.</p>
+            <h4>진입 규칙</h4>
+            <ul>
+              <li>저항선 <strong>거래량 동반 돌파</strong> 시 롱 진입.</li>
+              <li>돌파 거리 = 삼각형의 가장 두꺼운 부분 (보통 첫 지지선 저점 ↔ 저항선).</li>
+              <li>돌파 없이 지지선 이탈 → <strong>실패 패턴</strong>, 거래 없이 기다림.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="trade-plan">
+          <div class="tp-item"><span class="tp-label">진입</span><span class="tp-val">저항선 종가 돌파 시 롱</span></div>
+          <div class="tp-item"><span class="tp-label">손절</span><span class="tp-val">직전 지지선 아래</span></div>
+          <div class="tp-item"><span class="tp-label">목표</span><span class="tp-val">돌파점 + 삼각형 높이</span></div>
+        </div>
+      </div>
+
+      <!-- Descending Triangle -->
+      <div class="pattern">
+        <div class="pattern-header">
+          <div class="pattern-title">
+            <h3>Descending Triangle (하락 삼각)</h3>
+            <span class="tone-badge down">약세</span>
+            <span class="tone-badge continuation">Continuation</span>
+          </div>
+        </div>
+        <p class="hook">"바닥은 그대로인데 천장이 자꾸 낮아진다" — 사려는 힘이 빠지고 있다.</p>
+        <div class="pattern-body">
+          <div class="pattern-chart">
+            <svg viewBox="0 0 320 200" aria-label="하락 삼각 패턴">
+              <line x1="10" y1="30" x2="310" y2="110" stroke="var(--negative)" stroke-width="1.5"/>
+              <line x1="10" y1="150" x2="310" y2="150" stroke="var(--positive)" stroke-width="1.5" stroke-dasharray="5 3"/>
+              <polyline points="10,30 40,145 70,60 100,145 130,85 160,148 190,105 220,145 260,165 300,185" fill="none" stroke="var(--chart-line)" stroke-width="2"/>
+              <text x="15" y="22" fill="var(--negative)" font-size="10" font-weight="600">하락 저항선</text>
+              <text x="15" y="165" fill="var(--positive)" font-size="10" font-weight="600">수평 지지선</text>
+            </svg>
+          </div>
+          <div class="pattern-detail">
+            <h4>한 줄 요약</h4>
+            <p>저점은 수평 (같은 지지), 고점은 계속 낮아짐. 결국 <strong>아래로 이탈</strong> 할 확률이 높음.</p>
+            <h4>비유</h4>
+            <p>계단을 내려오다가 마지막 계단에서 멈춰서 있는데, 위쪽 사람들이 <strong>계속 밀어내려옴</strong>. 버티다 결국 떨어집니다.</p>
+            <h4>주의</h4>
+            <ul>
+              <li>지지선은 <strong>여러 번 테스트</strong> 될수록 "깨지면 큰 하락" 의 에너지를 축적.</li>
+              <li>이탈 시 거래량 급증 → 매도 러시 시작.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="trade-plan">
+          <div class="tp-item"><span class="tp-label">진입</span><span class="tp-val">지지선 종가 이탈 시 숏</span></div>
+          <div class="tp-item"><span class="tp-label">손절</span><span class="tp-val">직전 하락 저항선 위</span></div>
+          <div class="tp-item"><span class="tp-label">목표</span><span class="tp-val">이탈점 − 삼각형 높이</span></div>
+        </div>
+      </div>
+
+      <!-- Symmetrical Triangle -->
+      <div class="pattern">
+        <div class="pattern-header">
+          <div class="pattern-title">
+            <h3>Symmetrical Triangle (대칭 삼각)</h3>
+            <span class="tone-badge neutral">중립</span>
+            <span class="tone-badge continuation">Continuation</span>
+          </div>
+        </div>
+        <p class="hook">"고점은 낮아지고, 저점은 높아지며 한 점으로 모인다" — 양쪽 힘의 균형이 무너지기 직전.</p>
+        <div class="pattern-body">
+          <div class="pattern-chart">
+            <svg viewBox="0 0 320 200" aria-label="대칭 삼각 패턴">
+              <line x1="10" y1="30" x2="290" y2="100" stroke="var(--negative)" stroke-width="1.5"/>
+              <line x1="10" y1="170" x2="290" y2="100" stroke="var(--positive)" stroke-width="1.5"/>
+              <polyline points="10,30 40,160 70,55 100,150 130,75 160,135 190,90 220,125 250,102 280,108 310,50" fill="none" stroke="var(--chart-line)" stroke-width="2"/>
+              <path d="M290,100 L310,48" stroke="var(--accent)" stroke-width="2" marker-end="url(#arrUp)"/>
+              <text x="305" y="40" font-size="10" fill="var(--accent)">돌파!</text>
+            </svg>
+          </div>
+          <div class="pattern-detail">
+            <h4>한 줄 요약</h4>
+            <p>고점은 하락, 저점은 상승. 두 선이 한 점에 모일수록 <strong>곧 큰 움직임</strong> 이 나옴. 돌파 방향이 새 추세.</p>
+            <h4>비유</h4>
+            <p>물풍선을 양쪽에서 꾹꾹 누르는 상황. 어느 쪽이 먼저 찢어지느냐만 남았어요. 방향을 미리 예측하려 하지 말고, <strong>깨지는 순간 따라가는</strong> 게 정답.</p>
+            <h4>확률</h4>
+            <p>전통적으로 <strong>기존 추세 방향</strong> 으로 돌파할 확률이 약간 더 높다고 알려져 있어요. 상승 중이면 상단 돌파 확률 ↑.</p>
+          </div>
+        </div>
+        <div class="trade-plan">
+          <div class="tp-item"><span class="tp-label">진입</span><span class="tp-val">어느 쪽 돌파 확정 시 그 방향</span></div>
+          <div class="tp-item"><span class="tp-label">손절</span><span class="tp-val">삼각형 내부로 복귀 시</span></div>
+          <div class="tp-item"><span class="tp-label">목표</span><span class="tp-val">돌파점 ± 삼각형 시작부 높이</span></div>
+        </div>
+      </div>
+
+      <!-- Wedges -->
+      <div class="pattern">
+        <div class="pattern-header">
+          <div class="pattern-title">
+            <h3>Rising / Falling Wedge (상승/하락 쐐기)</h3>
+            <span class="tone-badge reversal">Reversal</span>
+          </div>
+        </div>
+        <p class="hook">"같은 방향으로 좁아지는 쐐기" — 겉은 추세처럼 보이지만 <strong>힘이 빠지고 있다</strong> 는 신호.</p>
+        <div class="pattern-body">
+          <div class="pattern-chart">
+            <svg viewBox="0 0 320 200" aria-label="상승 쐐기와 하락 쐐기">
+              <!-- Rising Wedge (left) -->
+              <g>
+                <text x="75" y="16" text-anchor="middle" font-size="11" fill="var(--negative)" font-weight="600">상승 쐐기 (약세)</text>
+                <line x1="10" y1="130" x2="140" y2="30" stroke="var(--negative)" stroke-width="1.2"/>
+                <line x1="10" y1="160" x2="140" y2="80" stroke="var(--negative)" stroke-width="1.2"/>
+                <polyline points="10,160 30,120 50,145 70,90 90,115 110,60 130,80 140,75" fill="none" stroke="var(--chart-line)" stroke-width="1.5"/>
+                <path d="M140,75 L150,130" stroke="var(--negative)" stroke-width="1.5" marker-end="url(#arrDown)"/>
+              </g>
+              <!-- Falling Wedge (right) -->
+              <g>
+                <text x="245" y="16" text-anchor="middle" font-size="11" fill="var(--positive)" font-weight="600">하락 쐐기 (강세)</text>
+                <line x1="180" y1="80" x2="310" y2="170" stroke="var(--positive)" stroke-width="1.2"/>
+                <line x1="180" y1="40" x2="310" y2="130" stroke="var(--positive)" stroke-width="1.2"/>
+                <polyline points="180,40 200,75 220,50 240,110 260,90 280,150 300,130 310,145" fill="none" stroke="var(--chart-line)" stroke-width="1.5"/>
+                <path d="M310,145 L315,70" stroke="var(--positive)" stroke-width="1.5" marker-end="url(#arrUp)"/>
+              </g>
+            </svg>
+          </div>
+          <div class="pattern-detail">
+            <h4>한 줄 요약</h4>
+            <p>쐐기는 <strong>같은 방향</strong> 으로 기울어지는데 <strong>범위가 좁아지는</strong> 게 핵심. 상승 쐐기는 하락 전환, 하락 쐐기는 상승 전환.</p>
+            <h4>비유</h4>
+            <p>자동차가 오르막길을 오르는데 점점 느려진다. 겉으론 올라가고 있지만 <strong>가속 페달이 안 먹히고 있어요</strong>. 곧 멈춰서 거꾸로 구를 운명.</p>
+            <h4>왜 반전인가</h4>
+            <p>추세를 만드는 피로도 — 매수자가 점점 적어져서 가격 범위가 좁아지다가, 결국 못 버티고 반대로 꺾여요.</p>
+          </div>
+        </div>
+        <div class="trade-plan">
+          <div class="tp-item"><span class="tp-label">진입</span><span class="tp-val">반대쪽 경계선 이탈 시</span></div>
+          <div class="tp-item"><span class="tp-label">손절</span><span class="tp-val">쐐기 내부 복귀 시</span></div>
+          <div class="tp-item"><span class="tp-label">목표</span><span class="tp-val">쐐기 시작부 높이만큼</span></div>
+        </div>
+      </div>
+
+      <!-- Flag / Pennant -->
+      <div class="pattern">
+        <div class="pattern-header">
+          <div class="pattern-title">
+            <h3>Flag / Pennant (깃발 / 페넌트)</h3>
+            <span class="tone-badge up">강세 (상승형)</span>
+            <span class="tone-badge continuation">Continuation</span>
+          </div>
+        </div>
+        <p class="hook">"가격이 폴대처럼 급등/급락한 뒤, 잠깐 옆으로 쉬는 깃발 모양" — 추세 중간 휴식.</p>
+        <div class="pattern-body">
+          <div class="pattern-chart">
+            <svg viewBox="0 0 320 200" aria-label="불 플래그 패턴">
+              <!-- pole -->
+              <polyline points="20,170 40,160 60,145 80,120 100,85 120,45" fill="none" stroke="var(--positive)" stroke-width="3"/>
+              <text x="70" y="170" font-size="10" fill="var(--positive)" font-weight="600">⬆ 급등 폴대</text>
+              <!-- flag (slight pullback) -->
+              <line x1="120" y1="45" x2="240" y2="80" stroke="var(--warning)" stroke-width="1.2"/>
+              <line x1="120" y1="75" x2="240" y2="110" stroke="var(--warning)" stroke-width="1.2"/>
+              <polyline points="120,45 135,85 150,55 165,95 180,65 195,100 210,75 225,105 240,85" fill="none" stroke="var(--chart-line)" stroke-width="1.5"/>
+              <!-- continuation -->
+              <polyline points="240,85 260,50 280,20 300,10" fill="none" stroke="var(--positive)" stroke-width="2"/>
+              <text x="260" y="10" font-size="10" fill="var(--positive)" font-weight="600">↑ 폴대만큼 추가 상승</text>
+            </svg>
+          </div>
+          <div class="pattern-detail">
+            <h4>한 줄 요약</h4>
+            <p>급한 움직임 (폴대) → 짧은 되돌림 (깃발) → 원래 방향으로 <strong>폴대만큼 또 움직임</strong>.</p>
+            <h4>Flag vs Pennant</h4>
+            <ul>
+              <li><strong>Flag (깃발)</strong> — 되돌림이 <em>평행사변형</em> (같은 기울기의 두 선).</li>
+              <li><strong>Pennant (페넌트)</strong> — 되돌림이 <em>작은 대칭 삼각형</em>.</li>
+              <li>시장 의미는 거의 같음 — 추세 중간 숨고르기.</li>
+            </ul>
+            <h4>비유</h4>
+            <p>100m 달리기 선수가 50m 지점에서 잠깐 속도를 늦추고 숨을 쉬더니 <strong>다시 전력 질주</strong> 하는 모습. 폴대 시작점 ~ 깃발 끝까지의 거리가 남은 거리와 비슷.</p>
+          </div>
+        </div>
+        <div class="trade-plan">
+          <div class="tp-item"><span class="tp-label">진입</span><span class="tp-val">깃발 상단 돌파 시 폴대 방향으로</span></div>
+          <div class="tp-item"><span class="tp-label">손절</span><span class="tp-val">깃발 하단 이탈 시</span></div>
+          <div class="tp-item"><span class="tp-label">목표</span><span class="tp-val">깃발 끝 + 폴대 길이</span></div>
+        </div>
+      </div>
+
+      <!-- Cup & Handle -->
+      <div class="pattern">
+        <div class="pattern-header">
+          <div class="pattern-title">
+            <h3>Cup &amp; Handle (컵 앤 핸들)</h3>
+            <span class="tone-badge up">강세</span>
+            <span class="tone-badge continuation">Continuation</span>
+          </div>
+        </div>
+        <p class="hook">"큰 U자 (컵) 옆에 작은 아래로 처진 손잡이" — 찻잔 모양 그대로.</p>
+        <div class="pattern-body">
+          <div class="pattern-chart">
+            <svg viewBox="0 0 320 200" aria-label="컵 앤 핸들 패턴">
+              <!-- cup path -->
+              <path d="M20,40 C40,40 50,170 120,170 C190,170 200,40 230,40 L260,40" fill="none" stroke="var(--chart-line)" stroke-width="2"/>
+              <!-- handle -->
+              <path d="M260,40 C270,70 280,80 285,70 C290,60 300,45 305,50" fill="none" stroke="var(--chart-line)" stroke-width="2"/>
+              <!-- rim -->
+              <line x1="20" y1="40" x2="310" y2="40" stroke="var(--warning)" stroke-dasharray="4 3" stroke-width="1.2"/>
+              <text x="20" y="30" font-size="10" fill="var(--warning)" font-weight="600">컵 손잡이 림 (돌파 레벨)</text>
+              <text x="120" y="190" text-anchor="middle" font-size="10" fill="var(--text-secondary)">컵 (U자)</text>
+              <text x="285" y="92" text-anchor="middle" font-size="10" fill="var(--text-secondary)">핸들</text>
+              <path d="M305,50 L310,15" stroke="var(--positive)" stroke-width="1.5" marker-end="url(#arrUp)"/>
+            </svg>
+          </div>
+          <div class="pattern-detail">
+            <h4>한 줄 요약</h4>
+            <p>깊지만 완만한 <strong>U자형 컵</strong> → 컵 림에서 짧고 얕은 <strong>하락 손잡이</strong> → 림 돌파.</p>
+            <h4>비유</h4>
+            <p>큰 파도를 한 번 맞고 해변에 밀려났다가 (컵), 마지막으로 <strong>작게 파도에 젖은 뒤</strong> (핸들) 해변을 벗어나는 모습.</p>
+            <h4>조건</h4>
+            <ul>
+              <li>컵은 <strong>V자가 아니라 U자</strong>. 너무 날카로우면 신뢰도 ↓.</li>
+              <li>핸들은 컵 깊이의 <strong>1/3 이내</strong>.</li>
+              <li>전통적으로 <strong>장기 상승 추세의 중간 휴식</strong> 으로 나타남.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="trade-plan">
+          <div class="tp-item"><span class="tp-label">진입</span><span class="tp-val">핸들 상단 = 림 돌파 시 롱</span></div>
+          <div class="tp-item"><span class="tp-label">손절</span><span class="tp-val">핸들 저점 아래</span></div>
+          <div class="tp-item"><span class="tp-label">목표</span><span class="tp-val">돌파점 + 컵 깊이</span></div>
+        </div>
+      </div>
+
+      <!-- Rectangle -->
+      <div class="pattern">
+        <div class="pattern-header">
+          <div class="pattern-title">
+            <h3>Rectangle (박스권)</h3>
+            <span class="tone-badge neutral">중립</span>
+            <span class="tone-badge continuation">Continuation</span>
+          </div>
+        </div>
+        <p class="hook">"천장과 바닥이 고정된 직사각형 안에서 가격이 왔다갔다" — 매수·매도가 한동안 동점.</p>
+        <div class="pattern-body">
+          <div class="pattern-chart">
+            <svg viewBox="0 0 320 200" aria-label="박스권 패턴">
+              <rect x="10" y="50" width="300" height="110" fill="rgba(139,92,246,0.06)" stroke="var(--accent-secondary)" stroke-width="1.2"/>
+              <polyline points="10,120 40,60 70,150 100,65 130,155 160,55 190,145 220,62 250,155 280,70 310,130" fill="none" stroke="var(--chart-line)" stroke-width="2"/>
+              <text x="18" y="42" font-size="10" fill="var(--accent-secondary)" font-weight="600">상단 저항</text>
+              <text x="18" y="175" font-size="10" fill="var(--accent-secondary)" font-weight="600">하단 지지</text>
+            </svg>
+          </div>
+          <div class="pattern-detail">
+            <h4>한 줄 요약</h4>
+            <p>평행한 두 선 사이에서 <strong>여러 번 왔다갔다</strong>. 결국 어느 한쪽이 깨지면 그 방향으로 큰 움직임.</p>
+            <h4>비유</h4>
+            <p>테니스 코트 안에서 랠리가 계속 이어지는 상황. 언젠가 누군가 실수하면 (돌파/이탈) 그 랠리가 끝나요.</p>
+            <h4>전략</h4>
+            <ul>
+              <li><strong>내부 거래</strong> — 하단에서 롱, 상단에서 숏 (범위가 넓을 때만).</li>
+              <li><strong>돌파 거래</strong> — 어느 쪽 깨지면 그 방향으로 (더 안전한 선택).</li>
+            </ul>
+          </div>
+        </div>
+        <div class="trade-plan">
+          <div class="tp-item"><span class="tp-label">진입</span><span class="tp-val">상단 돌파 시 롱 / 하단 이탈 시 숏</span></div>
+          <div class="tp-item"><span class="tp-label">손절</span><span class="tp-val">박스 내부로 복귀</span></div>
+          <div class="tp-item"><span class="tp-label">목표</span><span class="tp-val">돌파점 + 박스 높이</span></div>
+        </div>
+      </div>
+
+      <!-- MA Alignment (정배열 / 역배열) -->
+      <div class="pattern">
+        <div class="pattern-header">
+          <div class="pattern-title">
+            <h3>MA 정배열 / 역배열 (Bullish / Bearish Alignment)</h3>
+            <span class="tone-badge up">강세 / 약세</span>
+            <span class="tone-badge continuation">Continuation</span>
+          </div>
+        </div>
+        <p class="hook">"20 · 50 · 200 이평선이 <strong>순서대로</strong> 쌓였는가" — 추세의 <em>자세</em> 를 한눈에 보여주는 근간.</p>
+        <div class="pattern-body">
+          <div class="pattern-chart">
+            <svg viewBox="0 0 320 200" aria-label="MA 정배열과 역배열 비교">
+              <!-- LEFT: Bullish Alignment -->
+              <g>
+                <text x="80" y="16" text-anchor="middle" font-size="11" fill="var(--positive)" font-weight="700">정배열 (강세)</text>
+                <!-- price path -->
+                <polyline points="10,130 30,115 50,120 70,95 90,100 110,75 130,82 150,55" fill="none" stroke="var(--chart-line)" stroke-width="1.8"/>
+                <!-- MA20 - highest -->
+                <polyline points="10,140 50,128 90,108 130,88 150,68" fill="none" stroke="var(--positive)" stroke-width="1.5"/>
+                <text x="153" y="70" font-size="9" fill="var(--positive)" font-weight="700">MA20</text>
+                <!-- MA50 - middle -->
+                <polyline points="10,155 50,148 90,135 130,120 150,105" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+                <text x="153" y="107" font-size="9" fill="var(--accent)" font-weight="700">MA50</text>
+                <!-- MA200 - lowest -->
+                <polyline points="10,180 50,178 90,173 130,165 150,158" fill="none" stroke="var(--warning)" stroke-width="1.5"/>
+                <text x="153" y="160" font-size="9" fill="var(--warning)" font-weight="700">MA200</text>
+              </g>
+              <!-- Divider -->
+              <line x1="170" y1="30" x2="170" y2="190" stroke="var(--border)" stroke-width="1" stroke-dasharray="2 3"/>
+              <!-- RIGHT: Bearish Alignment -->
+              <g transform="translate(170,0)">
+                <text x="75" y="16" text-anchor="middle" font-size="11" fill="var(--negative)" font-weight="700">역배열 (약세)</text>
+                <polyline points="10,60 30,75 50,70 70,95 90,92 110,115 130,110 145,135" fill="none" stroke="var(--chart-line)" stroke-width="1.8"/>
+                <!-- MA20 - lowest -->
+                <polyline points="10,50 50,62 90,85 130,108 145,125" fill="none" stroke="var(--negative)" stroke-width="1.5"/>
+                <text x="146" y="127" font-size="9" fill="var(--negative)" font-weight="700">MA20</text>
+                <!-- MA50 - middle -->
+                <polyline points="10,40 50,50 90,70 130,90 145,100" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+                <text x="146" y="102" font-size="9" fill="var(--accent)" font-weight="700">MA50</text>
+                <!-- MA200 - highest -->
+                <polyline points="10,25 50,30 90,42 130,55 145,65" fill="none" stroke="var(--warning)" stroke-width="1.5"/>
+                <text x="146" y="67" font-size="9" fill="var(--warning)" font-weight="700">MA200</text>
+              </g>
+            </svg>
+          </div>
+          <div class="pattern-detail">
+            <h4>한 줄 요약</h4>
+            <ul>
+              <li><strong>정배열</strong> — 위에서부터 <strong>가격 &gt; MA20 &gt; MA50 &gt; MA200</strong> 순서로 쌓여 있음. 상승 추세의 교과서.</li>
+              <li><strong>역배열</strong> — 반대로 <strong>MA200 &gt; MA50 &gt; MA20 &gt; 가격</strong>. 하락 추세가 자리잡은 상태.</li>
+            </ul>
+            <h4>비유</h4>
+            <p>눈사람을 쌓을 때 <strong>큰 것 → 중간 → 작은 것</strong> 이 자연스러운 순서예요. 정배열은 이 순서 그대로, 역배열은 완전히 뒤집힌 상태. 순서가 뒤섞이면 추세가 <em>불분명</em> 하다는 신호.</p>
+            <h4>실전 활용</h4>
+            <ul>
+              <li>정배열 상태에서는 <strong>MA20 또는 MA50 되돌림</strong> 이 좋은 롱 진입 지점 (추세 순응).</li>
+              <li>역배열 상태에서는 <strong>MA20/50 반등이 저항</strong> 으로 작용 — 숏 진입 기회.</li>
+              <li>정배열 → 역배열 전환 과정에서 반드시 <strong>Death Cross</strong> 가 먼저 일어남.</li>
+              <li>대시보드에서는 패턴 감지기가 이 상태를 <strong>추세 배경 정보</strong> 로 사용 — 반대 방향 셋업은 자동으로 신뢰도 감점.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="trade-plan">
+          <div class="tp-item"><span class="tp-label">정배열</span><span class="tp-val">MA20 되돌림 매수 · 손절 MA50 아래</span></div>
+          <div class="tp-item"><span class="tp-label">역배열</span><span class="tp-val">MA20 반등 매도 · 손절 MA50 위</span></div>
+          <div class="tp-item"><span class="tp-label">혼재</span><span class="tp-val">거래 보류 (추세 불명확)</span></div>
+        </div>
+      </div>
+
+      <!-- Golden Cross / Death Cross -->
+      <div class="pattern">
+        <div class="pattern-header">
+          <div class="pattern-title">
+            <h3>Golden Cross / Death Cross (골든/데드 크로스)</h3>
+            <span class="tone-badge reversal">추세 전환</span>
+          </div>
+        </div>
+        <p class="hook">"MA20 이 MA50 을 <strong>위로 관통</strong> 하면 골든, <strong>아래로 관통</strong> 하면 데드" — 추세가 완전히 바뀌었다는 공식 선언.</p>
+        <div class="pattern-body">
+          <div class="pattern-chart">
+            <svg viewBox="0 0 320 200" aria-label="골든 크로스와 데드 크로스">
+              <!-- LEFT: Golden Cross -->
+              <g>
+                <text x="80" y="16" text-anchor="middle" font-size="11" fill="var(--positive)" font-weight="700">Golden Cross ↑</text>
+                <polyline points="10,150 30,140 50,135 70,115 90,110 110,88 130,80 150,60" fill="none" stroke="var(--chart-line)" stroke-width="1.5"/>
+                <!-- MA50 (slower) -->
+                <polyline points="10,120 50,118 90,115 130,105 150,100" fill="none" stroke="var(--accent)" stroke-width="1.8"/>
+                <text x="152" y="102" font-size="9" fill="var(--accent)" font-weight="700">MA50</text>
+                <!-- MA20 (faster, crosses up) -->
+                <polyline points="10,155 50,140 90,115 130,95 150,78" fill="none" stroke="var(--positive)" stroke-width="2"/>
+                <text x="152" y="80" font-size="9" fill="var(--positive)" font-weight="700">MA20</text>
+                <!-- cross marker -->
+                <circle cx="94" cy="115" r="6" fill="none" stroke="var(--warning)" stroke-width="2"/>
+                <text x="94" y="138" text-anchor="middle" font-size="9" fill="var(--warning)" font-weight="700">✦ 교차</text>
+              </g>
+              <!-- Divider -->
+              <line x1="170" y1="30" x2="170" y2="190" stroke="var(--border)" stroke-width="1" stroke-dasharray="2 3"/>
+              <!-- RIGHT: Death Cross -->
+              <g transform="translate(170,0)">
+                <text x="75" y="16" text-anchor="middle" font-size="11" fill="var(--negative)" font-weight="700">Death Cross ↓</text>
+                <polyline points="10,60 30,75 50,80 70,95 90,100 110,125 130,130 145,150" fill="none" stroke="var(--chart-line)" stroke-width="1.5"/>
+                <!-- MA50 -->
+                <polyline points="10,85 50,88 90,95 130,105 145,108" fill="none" stroke="var(--accent)" stroke-width="1.8"/>
+                <text x="146" y="110" font-size="9" fill="var(--accent)" font-weight="700">MA50</text>
+                <!-- MA20 (crosses down) -->
+                <polyline points="10,60 50,78 90,95 130,118 145,135" fill="none" stroke="var(--negative)" stroke-width="2"/>
+                <text x="146" y="137" font-size="9" fill="var(--negative)" font-weight="700">MA20</text>
+                <!-- cross marker -->
+                <circle cx="90" cy="95" r="6" fill="none" stroke="var(--warning)" stroke-width="2"/>
+                <text x="90" y="75" text-anchor="middle" font-size="9" fill="var(--warning)" font-weight="700">✦ 교차</text>
+              </g>
+            </svg>
+          </div>
+          <div class="pattern-detail">
+            <h4>한 줄 요약</h4>
+            <ul>
+              <li><strong>Golden Cross</strong> — 빠른 이평 (MA20) 이 느린 이평 (MA50) 을 <strong>위로 관통</strong>. 상승 추세가 공식화된 신호.</li>
+              <li><strong>Death Cross</strong> — 반대로 MA20 이 MA50 을 <strong>아래로 관통</strong>. 하락 추세 전환.</li>
+            </ul>
+            <h4>비유</h4>
+            <p>100m 달리기에서 뒤에 있던 선수가 <strong>앞사람을 추월</strong> 하는 순간 — 이제부터는 순위가 바뀐 것이 확정. 추월 <em>직전</em> 이 아니라 <em>추월 순간</em> 을 보는 것이 포인트.</p>
+            <h4>주의할 점</h4>
+            <ul>
+              <li>크로스는 <strong>후행 지표</strong> — 이미 한참 움직인 뒤에 나와요. "최저점에 사기" 같은 용도는 아님.</li>
+              <li>횡보장에서는 크로스가 <strong>양쪽으로 반복</strong> 되는 톱질 (whipsaw) 이 자주 발생 — 반드시 추세장에서만 믿을 것.</li>
+              <li><strong>추세 확인용 필터</strong> 로 쓰는 게 가장 적합 — "Golden Cross 아래에서는 숏을 피한다" 정도.</li>
+              <li>더 큰 크로스 (MA50 × MA200) 는 더 중요한 장기 추세 전환 신호.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="trade-plan">
+          <div class="tp-item"><span class="tp-label">Golden</span><span class="tp-val">발생 후 첫 MA20 되돌림 매수</span></div>
+          <div class="tp-item"><span class="tp-label">Death</span><span class="tp-val">발생 후 첫 MA20 반등 매도</span></div>
+          <div class="tp-item"><span class="tp-label">필터</span><span class="tp-val">반대 방향 신호는 신뢰도 하향</span></div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ============================================================
+         CHAPTER 6 — 측정 도구
+    ============================================================ -->
+    <section class="chapter" id="ch6" data-reveal>
+      <h2><span class="chap-num">Chapter 6</span> 측정 도구 — 피보 · 엘리엇 · 볼륨 프로파일</h2>
+      <p>앞의 패턴들이 "모양" 을 본다면, 이 셋은 "가격 레벨 자체" 를 측정해서 컨플루언스 존의 재료가 됩니다.</p>
+
+      <!-- Fibonacci -->
+      <div class="pattern">
+        <div class="pattern-header">
+          <div class="pattern-title">
+            <h3>Fibonacci Retracement (피보나치 되돌림)</h3>
+            <span class="tone-badge measurement">측정</span>
+          </div>
+        </div>
+        <p class="hook">"자연에서 반복되는 비율 — 가격도 이 비율로 되돌림한다" 는 가설.</p>
+        <div class="pattern-body">
+          <div class="pattern-chart">
+            <svg viewBox="0 0 320 200" aria-label="피보나치 되돌림 레벨">
+              <!-- swing -->
+              <line x1="40" y1="180" x2="280" y2="20" stroke="var(--positive)" stroke-width="2"/>
+              <!-- fib levels -->
+              <line x1="20" y1="180" x2="300" y2="180" stroke="var(--text-secondary)" stroke-width="0.8" stroke-dasharray="3 3"/>
+              <text x="5" y="184" font-size="9" fill="var(--text-secondary)">0.0</text>
+              <line x1="20" y1="140" x2="300" y2="140" stroke="var(--accent)" stroke-width="0.8" stroke-dasharray="3 3"/>
+              <text x="5" y="144" font-size="9" fill="var(--accent)">0.236</text>
+              <line x1="20" y1="108" x2="300" y2="108" stroke="var(--accent)" stroke-width="0.8" stroke-dasharray="3 3"/>
+              <text x="5" y="112" font-size="9" fill="var(--accent)">0.382</text>
+              <line x1="20" y1="100" x2="300" y2="100" stroke="var(--warning)" stroke-width="1.2" stroke-dasharray="3 3"/>
+              <text x="5" y="98" font-size="10" fill="var(--warning)" font-weight="700">★ 0.618</text>
+              <line x1="20" y1="80" x2="300" y2="80" stroke="var(--accent)" stroke-width="0.8" stroke-dasharray="3 3"/>
+              <text x="5" y="78" font-size="9" fill="var(--accent)">0.786</text>
+              <line x1="20" y1="20" x2="300" y2="20" stroke="var(--text-secondary)" stroke-width="0.8" stroke-dasharray="3 3"/>
+              <text x="5" y="24" font-size="9" fill="var(--text-secondary)">1.0</text>
+            </svg>
+          </div>
+          <div class="pattern-detail">
+            <h4>한 줄 요약</h4>
+            <p>한 번의 상승/하락 움직임 (스윙) 을 기준으로, <strong>0.382 / 0.5 / 0.618</strong> 지점이 되돌림의 주요 지지/저항이 됨.</p>
+            <h4>왜 이 숫자들?</h4>
+            <p>피보나치 수열 (1, 1, 2, 3, 5, 8, 13…) 에서 파생된 황금 비율. 해바라기 씨앗 배열, 앵무조개 껍데기, 은하 소용돌이에도 나타나는 자연의 비율이라서 시장 심리도 이 비율을 따른다는 (다소 신비주의적인) 가설.</p>
+            <h4>실전에서는</h4>
+            <ul>
+              <li><strong>0.618 (황금 비율)</strong> 이 가장 중요. 상승 폭의 약 62% 를 되돌리면 재반등 확률 ↑.</li>
+              <li>0.382 와 0.786 은 보조. 컨플루언스 존에서 다른 신호와 겹칠 때 가중치 부여.</li>
+              <li>이 자체로는 약한 신호 — 다른 레벨과 겹쳐야 의미 있음.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Elliott Wave -->
+      <div class="pattern">
+        <div class="pattern-header">
+          <div class="pattern-title">
+            <h3>Elliott Wave (엘리엇 파동)</h3>
+            <span class="tone-badge measurement">측정</span>
+          </div>
+        </div>
+        <p class="hook">"시장은 5파 상승 + 3파 하락 = 8개의 파동으로 움직인다" 는 고전 이론.</p>
+        <div class="pattern-body">
+          <div class="pattern-chart">
+            <svg viewBox="0 0 320 200" aria-label="엘리엇 5파 + ABC 조정">
+              <polyline points="10,170 50,120 90,140 130,70 170,110 210,30 250,80 285,50 315,95" fill="none" stroke="var(--chart-line)" stroke-width="2"/>
+              <!-- labels -->
+              <circle cx="50" cy="120" r="4" fill="var(--positive)"/><text x="50" y="138" text-anchor="middle" font-size="10" fill="var(--positive)" font-weight="700">1</text>
+              <circle cx="90" cy="140" r="4" fill="var(--positive)"/><text x="90" y="158" text-anchor="middle" font-size="10" fill="var(--positive)" font-weight="700">2</text>
+              <circle cx="130" cy="70" r="4" fill="var(--positive)"/><text x="130" y="60" text-anchor="middle" font-size="10" fill="var(--positive)" font-weight="700">3</text>
+              <circle cx="170" cy="110" r="4" fill="var(--positive)"/><text x="170" y="128" text-anchor="middle" font-size="10" fill="var(--positive)" font-weight="700">4</text>
+              <circle cx="210" cy="30" r="5" fill="var(--warning)"/><text x="210" y="20" text-anchor="middle" font-size="10" fill="var(--warning)" font-weight="700">5</text>
+              <circle cx="250" cy="80" r="4" fill="var(--negative)"/><text x="250" y="70" text-anchor="middle" font-size="10" fill="var(--negative)" font-weight="700">A</text>
+              <circle cx="285" cy="50" r="4" fill="var(--negative)"/><text x="285" y="40" text-anchor="middle" font-size="10" fill="var(--negative)" font-weight="700">B</text>
+              <circle cx="315" cy="95" r="4" fill="var(--negative)"/><text x="310" y="110" text-anchor="middle" font-size="10" fill="var(--negative)" font-weight="700">C</text>
+            </svg>
+          </div>
+          <div class="pattern-detail">
+            <h4>한 줄 요약</h4>
+            <p>추세 방향으로 <strong>5개 파동 (1-2-3-4-5)</strong>, 반대 방향으로 <strong>3개 파동 (A-B-C)</strong>. 모든 시간대에서 반복된다는 이론.</p>
+            <h4>비유</h4>
+            <p>파도가 해변에 칠 때 5번은 점점 더 세게 오고, 그 다음 3번은 반대로 되돌려오는 리듬. 혹은 <strong>5걸음 전진, 3걸음 후퇴</strong>.</p>
+            <h4>우리가 쓰는 레벨</h4>
+            <ul>
+              <li><strong>W3 (3파 끝)</strong> — 가장 강력한 추세 구간, 컨플루언스 가중치 0.9.</li>
+              <li><strong>W5 (5파 끝)</strong> — 추세 마무리 가능성, 가중치 1.1 (반전 대비).</li>
+              <li>이 레벨들은 다른 신호와 겹칠 때 존의 강도에 기여.</li>
+            </ul>
+            <h4>주의</h4>
+            <p>엘리엇은 <strong>사후 해석이 쉽지만 실시간 판별이 어렵다</strong> 는 평판이 있어요. 그래서 우리는 <em>이것만 보고 거래하지 않고</em> 컨플루언스의 한 조각으로 사용합니다.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Volume Profile -->
+      <div class="pattern">
+        <div class="pattern-header">
+          <div class="pattern-title">
+            <h3>Volume Profile (볼륨 프로파일)</h3>
+            <span class="tone-badge measurement">측정</span>
+          </div>
+        </div>
+        <p class="hook">"가격별로 거래가 얼마나 일어났나 를 가로 막대로 뽑아낸 지도" — 사람들이 실제로 합의한 가격대.</p>
+        <div class="pattern-body">
+          <div class="pattern-chart">
+            <svg viewBox="0 0 320 200" aria-label="볼륨 프로파일 POC/VAH/VAL">
+              <!-- price line -->
+              <polyline points="10,150 40,90 70,170 100,100 130,60 160,120 190,50 220,110 250,80 280,140 310,100" fill="none" stroke="var(--chart-line)" stroke-width="1.5"/>
+              <!-- volume bars on right -->
+              <g transform="translate(210,0)">
+                <rect x="0" y="40" width="20" height="10" fill="var(--accent)" opacity="0.5"/>
+                <rect x="0" y="55" width="40" height="10" fill="var(--accent)" opacity="0.6"/>
+                <rect x="0" y="70" width="60" height="10" fill="var(--accent)" opacity="0.7"/>
+                <rect x="0" y="85" width="80" height="10" fill="var(--accent)" opacity="0.8"/>
+                <rect x="0" y="100" width="100" height="10" fill="var(--warning)" opacity="0.9"/>
+                <rect x="0" y="115" width="70" height="10" fill="var(--accent)" opacity="0.7"/>
+                <rect x="0" y="130" width="45" height="10" fill="var(--accent)" opacity="0.6"/>
+                <rect x="0" y="145" width="25" height="10" fill="var(--accent)" opacity="0.5"/>
+              </g>
+              <line x1="10" y1="105" x2="310" y2="105" stroke="var(--warning)" stroke-width="1.2" stroke-dasharray="3 3"/>
+              <text x="150" y="100" font-size="10" fill="var(--warning)" font-weight="700">★ POC (거래가 가장 많은 가격)</text>
+              <line x1="10" y1="70" x2="200" y2="70" stroke="var(--accent)" stroke-width="0.8" stroke-dasharray="2 2"/>
+              <text x="18" y="66" font-size="9" fill="var(--accent)">VAH (가치 영역 상단)</text>
+              <line x1="10" y1="140" x2="200" y2="140" stroke="var(--accent)" stroke-width="0.8" stroke-dasharray="2 2"/>
+              <text x="18" y="136" font-size="9" fill="var(--accent)">VAL (가치 영역 하단)</text>
+            </svg>
+          </div>
+          <div class="pattern-detail">
+            <h4>핵심 3개 레벨</h4>
+            <ul>
+              <li><strong>POC (Point of Control)</strong> — 가장 많이 거래된 가격. 이곳은 <em>자석</em> 처럼 가격을 끌어당겨요.</li>
+              <li><strong>VAH / VAL</strong> — 전체 거래량의 70% 가 일어난 범위의 상/하단. "가치 영역" 이라 부름.</li>
+              <li>POC 위에 있으면 매수 우위, 아래에 있으면 매도 우위 경향.</li>
+            </ul>
+            <h4>비유</h4>
+            <p>가격 히스토리를 옆으로 눕혀서 "어떤 가격에 사람들이 오래 머물렀는지" 를 본 것. 사람이 오래 머문 카페는 다음에도 인기 있을 확률이 높은 것과 같은 원리.</p>
+            <h4>실전 활용</h4>
+            <ul>
+              <li>POC 는 <strong>아주 강한 컨플루언스 레벨</strong> — 가중치 1.2 이상.</li>
+              <li>가격이 VAH 돌파 → 상단으로 이탈 시도, VAL 이탈 → 하단으로 확장.</li>
+              <li>Low-volume nodes (거래가 적었던 가격) 는 가격이 <strong>빠르게 통과</strong> 하는 경향.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ============================================================
+         CHAPTER 7 — 실전 체크리스트
+    ============================================================ -->
+    <!-- ============================================================
+         CHAPTER 7 — AI 예측 모델
+    ============================================================ -->
+    <section class="chapter" id="ch7" data-reveal>
+      <h2><span class="chap-num">Chapter 7</span> AI 예측 모델 — 선형회귀 · XGBoost</h2>
+
+      <div class="lead-quote">
+        "미래를 맞추는 기계는 없다. 하지만 <strong>지금까지의 흐름이 어디로 향하는지</strong> 를 수학으로 말해주는 도구는 있다."
+      </div>
+
+      <p>
+        대시보드 상단의 <strong>AI 예측 탭</strong> 에는 두 종류의 모델이 들어 있어요.
+        하나는 누구나 실시간으로 쓸 수 있는 <strong>기본 모델 (선형회귀 + EWMA)</strong> —
+        수식만으로 돌아가는 가벼운 엔진이에요. 다른 하나는 <strong>PRO 모델 (XGBoost)</strong> —
+        Python 을 따로 실행해야 켜지는 본격 머신러닝 모델입니다.
+      </p>
+
+      <!-- 7.1 선형회귀란? -->
+      <h3 style="margin-top: 36px;">7.1 선형회귀 (Linear Regression) — "직선으로 요약하기"</h3>
+
+      <p>
+        <strong>선형회귀</strong> 는 이름만 들으면 무섭지만, 실제로는 <strong>"점들을 가장 잘 지나가는 직선 하나 긋기"</strong> 입니다.
+        최근 60봉의 종가를 보고, 그 점들의 중앙을 가로지르는 직선의 <strong>기울기와 절편</strong> 을 구해요.
+      </p>
+
+      <div class="pattern-chart" style="max-width: 620px; margin: 24px 0;">
+        <svg viewBox="0 0 620 260" aria-label="선형회귀 개념도 — 산점도 위에 추세 직선">
+          <!-- grid -->
+          <line x1="40" y1="220" x2="600" y2="220" stroke="var(--chart-grid)" stroke-width="1"/>
+          <line x1="40" y1="40" x2="40" y2="220" stroke="var(--chart-grid)" stroke-width="1"/>
+          <text x="300" y="250" text-anchor="middle" font-size="11" fill="var(--text-secondary)">시간 →</text>
+          <text x="20" y="130" text-anchor="middle" font-size="11" fill="var(--text-secondary)" transform="rotate(-90 20 130)">가격 →</text>
+          <!-- data points (실제 종가 scatter) -->
+          <circle cx="70"  cy="200" r="4" fill="var(--accent)"/>
+          <circle cx="110" cy="185" r="4" fill="var(--accent)"/>
+          <circle cx="150" cy="195" r="4" fill="var(--accent)"/>
+          <circle cx="190" cy="170" r="4" fill="var(--accent)"/>
+          <circle cx="230" cy="180" r="4" fill="var(--accent)"/>
+          <circle cx="270" cy="150" r="4" fill="var(--accent)"/>
+          <circle cx="310" cy="160" r="4" fill="var(--accent)"/>
+          <circle cx="350" cy="130" r="4" fill="var(--accent)"/>
+          <circle cx="390" cy="145" r="4" fill="var(--accent)"/>
+          <circle cx="430" cy="110" r="4" fill="var(--accent)"/>
+          <circle cx="470" cy="120" r="4" fill="var(--accent)"/>
+          <circle cx="510" cy="90"  r="4" fill="var(--accent)"/>
+          <!-- fit line -->
+          <line x1="55" y1="210" x2="530" y2="80" stroke="var(--positive)" stroke-width="3" stroke-linecap="round"/>
+          <text x="540" y="75" font-size="11" fill="var(--positive)" font-weight="600">= 추세선</text>
+          <!-- prediction extension (dashed) -->
+          <line x1="530" y1="80" x2="600" y2="60" stroke="var(--warning)" stroke-width="3" stroke-dasharray="6 4" stroke-linecap="round"/>
+          <text x="565" y="45" font-size="11" fill="var(--warning)" font-weight="600">→ 미래 예측</text>
+          <!-- residual markers (점선) -->
+          <line x1="350" y1="130" x2="350" y2="155" stroke="var(--negative)" stroke-width="1" stroke-dasharray="2 2"/>
+          <line x1="270" y1="150" x2="270" y2="170" stroke="var(--negative)" stroke-width="1" stroke-dasharray="2 2"/>
+          <text x="10" y="20" font-size="12" fill="var(--text)" font-weight="600">최근 60봉 종가 × 최소제곱법 직선 = 추세 방향</text>
+        </svg>
+      </div>
+
+      <div class="info-grid">
+        <div class="info-card">
+          <h4>📐 기울기 (slope)</h4>
+          <p>직선이 <strong>얼마나 가파르게</strong> 올라가거나 내려가는가. 양수면 상승 추세, 음수면 하락 추세.</p>
+        </div>
+        <div class="info-card">
+          <h4>🎯 절편 (intercept)</h4>
+          <p>시작점에서의 값. 기울기와 절편만 있으면 <strong>임의의 미래 지점의 가격</strong> 을 계산할 수 있어요.</p>
+        </div>
+        <div class="info-card">
+          <h4>🧮 R² (결정계수)</h4>
+          <p>직선이 실제 점들을 얼마나 잘 설명하는지 (0~1). 1 에 가까울수록 "이 추세는 분명히 있다", 0 에 가까우면 "그냥 랜덤".</p>
+        </div>
+      </div>
+
+      <p style="margin-top: 16px;">
+        대시보드의 <strong>예측 신뢰도 (R²)</strong> 박스가 바로 이 R² 값이에요.
+        <strong>0.7 이상이면 "꽤 분명한 추세"</strong>, 0.3 미만이면 "이 예측은 별로 믿지 마세요" 라는 뜻입니다.
+      </p>
+
+      <!-- 7.2 EWMA -->
+      <h3 style="margin-top: 48px;">7.2 EWMA — "최근 변동성에 더 많은 무게"</h3>
+
+      <p>
+        가격은 직선처럼 매끄럽지 않고 위아래로 흔들려요. 그 <strong>흔들림의 크기 (변동성)</strong> 를
+        측정하는 게 EWMA (Exponentially Weighted Moving Average, 지수가중 이동평균) 입니다.
+      </p>
+
+      <p>
+        비유하자면 — 날씨 예보에서 <strong>"어제의 온도가 한 달 전 온도보다 훨씬 중요하다"</strong> 는 거예요.
+        EWMA 는 최근 변동에 더 큰 가중치를 주고, 오래된 변동은 점점 잊어버립니다.
+      </p>
+
+      <div class="pattern-chart" style="max-width: 620px; margin: 24px 0;">
+        <svg viewBox="0 0 620 220" aria-label="EWMA 가중치 감쇠 개념도">
+          <!-- bars for weights -->
+          <rect x="60"  y="30"  width="32" height="160" fill="var(--positive)" opacity="0.9"/>
+          <rect x="110" y="55"  width="32" height="135" fill="var(--positive)" opacity="0.75"/>
+          <rect x="160" y="82"  width="32" height="108" fill="var(--positive)" opacity="0.6"/>
+          <rect x="210" y="108" width="32" height="82"  fill="var(--positive)" opacity="0.45"/>
+          <rect x="260" y="132" width="32" height="58"  fill="var(--positive)" opacity="0.35"/>
+          <rect x="310" y="148" width="32" height="42"  fill="var(--positive)" opacity="0.28"/>
+          <rect x="360" y="160" width="32" height="30"  fill="var(--positive)" opacity="0.22"/>
+          <rect x="410" y="170" width="32" height="20"  fill="var(--positive)" opacity="0.17"/>
+          <rect x="460" y="176" width="32" height="14"  fill="var(--positive)" opacity="0.13"/>
+          <rect x="510" y="180" width="32" height="10"  fill="var(--positive)" opacity="0.1"/>
+          <text x="76"  y="210" text-anchor="middle" font-size="10" fill="var(--text-secondary)">오늘</text>
+          <text x="126" y="210" text-anchor="middle" font-size="10" fill="var(--text-secondary)">-1</text>
+          <text x="176" y="210" text-anchor="middle" font-size="10" fill="var(--text-secondary)">-2</text>
+          <text x="226" y="210" text-anchor="middle" font-size="10" fill="var(--text-secondary)">-3</text>
+          <text x="276" y="210" text-anchor="middle" font-size="10" fill="var(--text-secondary)">-4</text>
+          <text x="326" y="210" text-anchor="middle" font-size="10" fill="var(--text-secondary)">-5</text>
+          <text x="376" y="210" text-anchor="middle" font-size="10" fill="var(--text-secondary)">-6</text>
+          <text x="426" y="210" text-anchor="middle" font-size="10" fill="var(--text-secondary)">-7</text>
+          <text x="476" y="210" text-anchor="middle" font-size="10" fill="var(--text-secondary)">-8</text>
+          <text x="526" y="210" text-anchor="middle" font-size="10" fill="var(--text-secondary)">-9</text>
+          <text x="10" y="20" font-size="12" fill="var(--text)" font-weight="600">EWMA 가중치 — 최근일수록 영향 ↑, 오래될수록 영향 ↓</text>
+        </svg>
+      </div>
+
+      <p>
+        예측 값 주변의 <strong>±1σ 대역</strong> (상/하단 점선 밴드) 이 바로 이 EWMA 표준편차로 그려져요.
+        밴드가 넓으면 "요즘 변동성 심함 → 진폭이 크게 벌어질 수 있음",
+        밴드가 좁으면 "최근 조용함 → 예측 범위가 좁아도 됨" 이라는 의미입니다.
+      </p>
+
+      <!-- 7.3 AI 예측 탭 해석법 -->
+      <h3 style="margin-top: 48px;">7.3 AI 예측 탭 수치 — 실제로 어떻게 보나</h3>
+
+      <div class="info-grid">
+        <div class="info-card">
+          <h4>📈 단기 예측 (다음 캔들)</h4>
+          <p>선형회귀 직선을 <strong>1봉 앞</strong> 으로 연장한 값. 지금이 1시간봉이면 다음 1시간 뒤의 예상 가격.</p>
+        </div>
+        <div class="info-card">
+          <h4>📊 중기 예측 (5 캔들)</h4>
+          <p>같은 직선을 <strong>5봉 앞</strong> 까지 뻗은 값. 추세가 유지된다는 가정 하의 참고값.</p>
+        </div>
+        <div class="info-card">
+          <h4>🎯 예측 신뢰도 (R²)</h4>
+          <p><strong>0.7 이상 = 강한 추세</strong>, 0.4~0.7 = 보통, 0.4 미만 = 추세 약함 (예측 무시 권장).</p>
+        </div>
+      </div>
+
+      <div class="callout warn">
+        <strong>⚠️ 선형회귀는 "지금의 추세가 그대로 이어진다" 고 가정합니다</strong>
+        뉴스, FOMC, 해킹 같은 <strong>이벤트</strong> 는 직선이 절대로 예측하지 못해요.
+        R² 가 아무리 높아도 — 그건 "<em>지금까지</em> 의 흐름이 분명하다" 는 뜻일 뿐,
+        <em>앞으로</em> 도 그 흐름이 이어진다는 보장은 없습니다. 추세는 언제든 꺾일 수 있어요.
+      </div>
+
+      <!-- 7.4 PRO 모델 -->
+      <h3 style="margin-top: 48px;">7.4 PRO 모델 (XGBoost) — 40+ 피처를 학습한 확률 엔진</h3>
+
+      <p>
+        선형회귀가 <strong>가격 하나만</strong> 보고 직선을 긋는다면, PRO 모델은 <strong>펀딩비 · OI ·
+        롱숏비율 · 공포탐욕 지수 · 거래량 · 피보 레벨 · 변동성 · 추세 강도 등 40개 이상의 피처</strong> 를
+        한꺼번에 봅니다. 그리고 "이 조건에서 상승/하락 할 확률이 몇 %" 라고 말해주죠.
+      </p>
+
+      <div class="pattern-chart" style="max-width: 620px; margin: 24px 0;">
+        <svg viewBox="0 0 620 240" aria-label="선형회귀 대비 XGBoost 피처 다양성 비교">
+          <!-- LEFT: 선형회귀 -->
+          <text x="130" y="25" text-anchor="middle" font-size="13" fill="var(--text)" font-weight="700">선형회귀 (기본)</text>
+          <rect x="50" y="45" width="160" height="160" rx="8" fill="var(--surface)" stroke="var(--border)" stroke-width="1"/>
+          <circle cx="130" cy="125" r="38" fill="var(--positive)" opacity="0.25"/>
+          <text x="130" y="120" text-anchor="middle" font-size="11" fill="var(--text)" font-weight="600">가격만</text>
+          <text x="130" y="138" text-anchor="middle" font-size="10" fill="var(--text-secondary)">1 feature</text>
+          <!-- RIGHT: XGBoost -->
+          <text x="450" y="25" text-anchor="middle" font-size="13" fill="var(--text)" font-weight="700">XGBoost PRO</text>
+          <rect x="330" y="45" width="240" height="160" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="2"/>
+          <!-- feature dots -->
+          <circle cx="360" cy="75"  r="8" fill="var(--accent)"/>         <text x="378" y="79" font-size="10" fill="var(--text-secondary)">price</text>
+          <circle cx="440" cy="75"  r="8" fill="var(--accent)"/>         <text x="458" y="79" font-size="10" fill="var(--text-secondary)">funding</text>
+          <circle cx="520" cy="75"  r="8" fill="var(--accent)"/>         <text x="538" y="79" font-size="10" fill="var(--text-secondary)">OI</text>
+          <circle cx="360" cy="105" r="8" fill="var(--accent-secondary)"/><text x="378" y="109" font-size="10" fill="var(--text-secondary)">long/short</text>
+          <circle cx="440" cy="105" r="8" fill="var(--accent-secondary)"/><text x="458" y="109" font-size="10" fill="var(--text-secondary)">F&amp;G</text>
+          <circle cx="520" cy="105" r="8" fill="var(--accent-secondary)"/><text x="538" y="109" font-size="10" fill="var(--text-secondary)">volume</text>
+          <circle cx="360" cy="135" r="8" fill="var(--warning)"/>        <text x="378" y="139" font-size="10" fill="var(--text-secondary)">ATR</text>
+          <circle cx="440" cy="135" r="8" fill="var(--warning)"/>        <text x="458" y="139" font-size="10" fill="var(--text-secondary)">RSI</text>
+          <circle cx="520" cy="135" r="8" fill="var(--warning)"/>        <text x="538" y="139" font-size="10" fill="var(--text-secondary)">MACD</text>
+          <circle cx="360" cy="165" r="8" fill="var(--positive)"/>       <text x="378" y="169" font-size="10" fill="var(--text-secondary)">fib</text>
+          <circle cx="440" cy="165" r="8" fill="var(--positive)"/>       <text x="458" y="169" font-size="10" fill="var(--text-secondary)">POC</text>
+          <circle cx="520" cy="165" r="8" fill="var(--positive)"/>       <text x="538" y="169" font-size="10" fill="var(--text-secondary)">trend</text>
+          <text x="450" y="195" text-anchor="middle" font-size="10" fill="var(--text-secondary)">... 총 40+ features</text>
+          <!-- Arrow between -->
+          <line x1="220" y1="125" x2="322" y2="125" stroke="var(--text-secondary)" stroke-width="2" marker-end="url(#arrPRO)"/>
+          <defs>
+            <marker id="arrPRO" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="var(--text-secondary)"/>
+            </marker>
+          </defs>
+          <text x="271" y="115" text-anchor="middle" font-size="10" fill="var(--text-secondary)">업그레이드</text>
+        </svg>
+      </div>
+
+      <div class="info-grid">
+        <div class="info-card">
+          <h4>🧠 학습 (Training)</h4>
+          <p>과거 수천 캔들 × 40+ 피처 × 결과 (상승/하락) 로 모델이 <strong>"이런 조건 다음엔 이런 결과가 나왔다"</strong> 는 패턴을 외웁니다.</p>
+        </div>
+        <div class="info-card">
+          <h4>🎛️ 보정 (Isotonic Calibration)</h4>
+          <p>모델이 "70% 상승" 이라고 말했을 때 실제로도 10번 중 7번 상승하도록 확률값을 조정. 이래서 <strong>p_cal</strong> (calibrated probability) 이라 부릅니다.</p>
+        </div>
+        <div class="info-card">
+          <h4>📏 AUC 0.80</h4>
+          <p>이 프로젝트 v2 의 판별력. <strong>"5번 중 4번"</strong> 정도로 방향을 맞춘다는 뜻. 완벽은 아니지만 동전던지기 (AUC 0.5) 보다 훨씬 나아요.</p>
+        </div>
+      </div>
+
+      <div class="callout">
+        <strong>📦 PRO 모델 켜는 법</strong>
+        <code>predictor/run_windows.bat</code> (Windows) 또는 <code>predictor/run_mac.command</code> (Mac) 을 더블클릭 →
+        Python 이 XGBoost 학습 → <code>predictions.json</code> 파일 생성 → 대시보드가 자동으로 인식.
+        PRO 가 활성화되면 <strong>선형회귀 블록은 자동 숨김</strong> 됩니다.
+      </div>
+
+      <!-- 7.5 언제 뭘 믿나 -->
+      <h3 style="margin-top: 48px;">7.5 언제 기본 모델을, 언제 PRO 모델을 믿나</h3>
+
+      <div class="tier-row">
+        <div class="tier-badge b">기본</div>
+        <div>
+          <h4>선형회귀 + EWMA — 빠른 눈요기</h4>
+          <p>
+            <strong>"지금 이 차트가 어느 쪽으로 흐르고 있나"</strong> 를 수 초 안에 보고 싶을 때.
+            단, R² 를 꼭 같이 확인 — 0.4 미만이면 이 예측은 참고도 하지 마세요.
+          </p>
+        </div>
+      </div>
+      <div class="tier-row">
+        <div class="tier-badge a">PRO</div>
+        <div>
+          <h4>XGBoost — 진짜 베팅 전 확인용</h4>
+          <p>
+            실제로 포지션을 잡을지 말지 결정할 때. 펀딩비·OI·F&amp;G 같은 <strong>가격 외 조건</strong> 까지 반영한 확률 (p_cal) 이
+            나와서 컨플루언스 존 알림의 신뢰도를 한 번 더 검증해줍니다.
+          </p>
+        </div>
+      </div>
+      <div class="tier-row">
+        <div class="tier-badge s">최강</div>
+        <div>
+          <h4>두 모델이 동의할 때</h4>
+          <p>
+            선형회귀도 상승 추세 (slope &gt; 0, R² ≥ 0.6) 이고, XGBoost p_cal 도 ≥ 0.80 —
+            이 두 조건이 <strong>컨플루언스 존 S 티어</strong> 와 겹치면 이 프로젝트 기준 <strong>최상급 확신 셋업</strong>.
+          </p>
+        </div>
+      </div>
+
+      <div class="callout warn" style="margin-top: 32px;">
+        <strong>🚫 절대로 이렇게 쓰지 마세요</strong>
+        "AI 예측이 +2% 라니까 무조건 매수" — 이건 위험합니다.
+        AI 예측은 <strong>컨플루언스 존 + 리스크 관리 체크리스트와 결합될 때만</strong> 의미가 있어요.
+        단독으로 쓰면 추세 전환 시점에 정확히 손실을 봅니다.
+      </div>
+    </section>
+
+    <!-- ============================================================
+         CHAPTER 8 — 실전 매매 순서
+    ============================================================ -->
+    <section class="chapter" id="ch8" data-reveal>
+      <h2><span class="chap-num">Chapter 8</span> 실전 매매 순서 — 9단계 플로우</h2>
+
+      <p>
+        앞의 7개 챕터는 <strong>"각 도구가 무엇을 말하는가"</strong> 를 설명했어요.
+        이제 그 도구들을 <strong>실제 트레이드에 어떤 순서로</strong> 사용하는지, 알림이 울린 직후부터 진입·관리까지의
+        전 과정을 한 줄로 꿰어봅니다. 이 순서를 지키면 <strong>감정적 진입</strong> 을 크게 줄일 수 있어요.
+      </p>
+
+      <div class="lead-quote">
+        "좋은 트레이드는 <strong>준비된 행동</strong> 이다. 알림을 보고 서둘러 클릭하는 건 <em>반응</em> 이지 트레이드가 아니다."
+      </div>
+
+      <!-- flow diagram -->
+      <div class="pattern-chart" style="max-width: 720px; margin: 36px auto;">
+        <svg viewBox="0 0 720 220" aria-label="실전 매매 순서 9단계 플로우">
+          <defs>
+            <marker id="arrFlow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M0,0 L10,5 L0,10 z" fill="var(--text-secondary)"/>
+            </marker>
+          </defs>
+          <!-- Row 1 -->
+          <g>
+            <rect x="10"  y="20" width="130" height="50" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.5"/>
+            <text x="75"  y="40" text-anchor="middle" font-size="11" fill="var(--text)" font-weight="700">1. 거시 컨텍스트</text>
+            <text x="75"  y="58" text-anchor="middle" font-size="10" fill="var(--text-secondary)">FOMC / CPI / 공포탐욕</text>
+
+            <line x1="140" y1="45" x2="160" y2="45" stroke="var(--text-secondary)" stroke-width="1.5" marker-end="url(#arrFlow)"/>
+
+            <rect x="160" y="20" width="130" height="50" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.5"/>
+            <text x="225" y="40" text-anchor="middle" font-size="11" fill="var(--text)" font-weight="700">2. 상위 TF 추세</text>
+            <text x="225" y="58" text-anchor="middle" font-size="10" fill="var(--text-secondary)">1D · MA200 · 정배열?</text>
+
+            <line x1="290" y1="45" x2="310" y2="45" stroke="var(--text-secondary)" stroke-width="1.5" marker-end="url(#arrFlow)"/>
+
+            <rect x="310" y="20" width="130" height="50" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.5"/>
+            <text x="375" y="40" text-anchor="middle" font-size="11" fill="var(--text)" font-weight="700">3. 하위 TF 구조</text>
+            <text x="375" y="58" text-anchor="middle" font-size="10" fill="var(--text-secondary)">4H · 1H · 피벗/패턴</text>
+
+            <line x1="440" y1="45" x2="460" y2="45" stroke="var(--text-secondary)" stroke-width="1.5" marker-end="url(#arrFlow)"/>
+
+            <rect x="460" y="20" width="130" height="50" rx="8" fill="var(--surface)" stroke="var(--accent-secondary)" stroke-width="1.5"/>
+            <text x="525" y="40" text-anchor="middle" font-size="11" fill="var(--text)" font-weight="700">4. 컨플루언스 모달</text>
+            <text x="525" y="58" text-anchor="middle" font-size="10" fill="var(--text-secondary)">존 구성 & 티어</text>
+
+            <line x1="590" y1="45" x2="610" y2="45" stroke="var(--text-secondary)" stroke-width="1.5" marker-end="url(#arrFlow)"/>
+
+            <rect x="610" y="20" width="100" height="50" rx="8" fill="var(--surface)" stroke="var(--warning)" stroke-width="1.5"/>
+            <text x="660" y="40" text-anchor="middle" font-size="11" fill="var(--warning)" font-weight="700">5. 트리거</text>
+            <text x="660" y="58" text-anchor="middle" font-size="10" fill="var(--text-secondary)">확정 캔들</text>
+          </g>
+
+          <!-- connector down -->
+          <line x1="660" y1="70" x2="660" y2="95" stroke="var(--text-secondary)" stroke-width="1.5" marker-end="url(#arrFlow)"/>
+
+          <!-- Row 2 (reversed) -->
+          <g>
+            <rect x="610" y="100" width="100" height="50" rx="8" fill="var(--surface)" stroke="var(--positive)" stroke-width="1.5"/>
+            <text x="660" y="120" text-anchor="middle" font-size="11" fill="var(--positive)" font-weight="700">6. 리스크</text>
+            <text x="660" y="138" text-anchor="middle" font-size="10" fill="var(--text-secondary)">손절 · 사이즈</text>
+
+            <line x1="610" y1="125" x2="590" y2="125" stroke="var(--text-secondary)" stroke-width="1.5" marker-end="url(#arrFlow)"/>
+
+            <rect x="460" y="100" width="130" height="50" rx="8" fill="var(--surface)" stroke="var(--accent-secondary)" stroke-width="1.5"/>
+            <text x="525" y="120" text-anchor="middle" font-size="11" fill="var(--text)" font-weight="700">7. AI 예측 교차확인</text>
+            <text x="525" y="138" text-anchor="middle" font-size="10" fill="var(--text-secondary)">R² / p_cal</text>
+
+            <line x1="460" y1="125" x2="440" y2="125" stroke="var(--text-secondary)" stroke-width="1.5" marker-end="url(#arrFlow)"/>
+
+            <rect x="310" y="100" width="130" height="50" rx="8" fill="var(--surface)" stroke="var(--positive)" stroke-width="1.5"/>
+            <text x="375" y="120" text-anchor="middle" font-size="11" fill="var(--text)" font-weight="700">8. 주문 · 일지</text>
+            <text x="375" y="138" text-anchor="middle" font-size="10" fill="var(--text-secondary)">진입 이유 기록</text>
+
+            <line x1="310" y1="125" x2="290" y2="125" stroke="var(--text-secondary)" stroke-width="1.5" marker-end="url(#arrFlow)"/>
+
+            <rect x="160" y="100" width="130" height="50" rx="8" fill="var(--surface)" stroke="var(--positive)" stroke-width="1.5"/>
+            <text x="225" y="120" text-anchor="middle" font-size="11" fill="var(--text)" font-weight="700">9. 포지션 관리</text>
+            <text x="225" y="138" text-anchor="middle" font-size="10" fill="var(--text-secondary)">TP · BE · 회고</text>
+          </g>
+
+          <!-- legend -->
+          <g transform="translate(10,170)">
+            <text x="0"   y="12" font-size="10" fill="var(--text-secondary)" font-weight="600">● 컨텍스트</text>
+            <text x="100" y="12" font-size="10" fill="var(--accent-secondary)" font-weight="600">● 셋업 발굴</text>
+            <text x="210" y="12" font-size="10" fill="var(--warning)" font-weight="600">● 진입 트리거</text>
+            <text x="320" y="12" font-size="10" fill="var(--positive)" font-weight="600">● 실행 & 관리</text>
+          </g>
+        </svg>
+      </div>
+
+      <!-- Step 1 -->
+      <div class="pattern">
+        <div class="pattern-header">
+          <div class="pattern-title">
+            <h3>1단계 · 거시 컨텍스트 체크 (5분)</h3>
+            <span class="tone-badge neutral">준비</span>
+          </div>
+        </div>
+        <p class="hook">"오늘 <strong>시장 전체</strong> 가 어떤 기분인지" 부터 확인 — 지표가 아닌 <em>환경</em> 을 본다.</p>
+        <div class="pattern-detail">
+          <h4>체크 항목</h4>
+          <ul>
+            <li><strong>경제 캘린더</strong> — 오늘/내일 FOMC, CPI, PPI, 고용지표 있나? 있으면 그 전후 <strong>2~4시간은 거래 지양</strong>.</li>
+            <li><strong>공포탐욕 지수 (F&amp;G)</strong> — 극단값 (&lt;20 극공포, &gt;80 극탐욕) 이면 역추세 가능성 ↑.</li>
+            <li><strong>BTC 도미넌스·DXY·금·S&amp;P</strong> — 크게 출렁이는 중이면 알트코인 셋업은 보류.</li>
+            <li><strong>OI · 펀딩비</strong> — 펀딩비 극단 (&gt;0.1% 또는 &lt;-0.1%) = 한쪽 쏠림 → 역방향 청산 위험.</li>
+          </ul>
+          <h4>왜 먼저 하나</h4>
+          <p>아무리 예쁜 S 티어 셋업이 나와도, 30분 뒤 FOMC 가 있다면 그 차트는 <strong>이벤트로 리셋</strong> 됩니다. 환경이 나쁘면 <em>트레이드를 쉬는 것도 하나의 트레이드</em>.</p>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="pattern">
+        <div class="pattern-header">
+          <div class="pattern-title">
+            <h3>2단계 · 상위 시간봉 추세 판단 (3분)</h3>
+            <span class="tone-badge neutral">준비</span>
+          </div>
+        </div>
+        <p class="hook">"큰 흐름에 <strong>거슬러서</strong> 타지 말자" — 1D, 4H 를 먼저 보고 방향을 정한다.</p>
+        <div class="pattern-detail">
+          <h4>체크 항목</h4>
+          <ul>
+            <li><strong>1D 차트</strong> — MA50 / MA200 위치로 <strong>정배열 / 역배열 / 혼재</strong> 판정.</li>
+            <li><strong>Higher High / Higher Low</strong> 가 여전히 유효한가, 아니면 구조가 깨졌나?</li>
+            <li><strong>주요 월봉/주봉 지지·저항</strong> 이 현재가 근처인지.</li>
+          </ul>
+          <h4>추세 방향 → 허용 셋업</h4>
+          <ul>
+            <li><strong>강한 상승 추세 (정배열 + MA50 위)</strong> — 롱 위주. 되돌림 매수 셋업만 검토.</li>
+            <li><strong>강한 하락 추세 (역배열 + MA50 아래)</strong> — 숏 위주. 반등 매도 셋업만 검토.</li>
+            <li><strong>횡보·혼재</strong> — 박스 양단에서만 역지정 매매, 중간 구간은 방관.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="pattern">
+        <div class="pattern-header">
+          <div class="pattern-title">
+            <h3>3단계 · 하위 시간봉 구조 분석 (5분)</h3>
+            <span class="tone-badge neutral">준비</span>
+          </div>
+        </div>
+        <p class="hook">상위 방향과 <strong>같은 방향</strong> 의 패턴만 찾는다 — 이게 "추세 순응 트레이드" 의 핵심.</p>
+        <div class="pattern-detail">
+          <h4>체크 항목</h4>
+          <ul>
+            <li><strong>4H → 1H → 15m</strong> 순으로 줌인. 각 TF 의 피벗 고점/저점이 어디인가.</li>
+            <li><strong>현재 진행 중인 패턴</strong> — 삼각수렴? 플래그? 이중바닥? 쐐기?</li>
+            <li><strong>MA 상태</strong> — 가격이 MA20/50 위인지 아래인지.</li>
+            <li><strong>RSI 다이버전스</strong> 여부 (특히 주요 레벨 근처).</li>
+          </ul>
+          <h4>핵심 질문</h4>
+          <p>"지금 화면에 보이는 모양을 <strong>한 문장</strong> 으로 설명할 수 있는가?" — 안 되면 아직 트레이드할 준비가 안 된 겁니다. (예: "1H 에서 하락 쐐기 + 다이버전스 + POC 부근", "4H 정배열에서 MA50 되돌림 중")</p>
+        </div>
+      </div>
+
+      <!-- Step 4 -->
+      <div class="pattern">
+        <div class="pattern-header">
+          <div class="pattern-title">
+            <h3>4단계 · 컨플루언스 존 모달 분석 (3분)</h3>
+            <span class="tone-badge up">셋업 발굴</span>
+          </div>
+        </div>
+        <p class="hook">대시보드의 존 리스트를 열고 <strong>"왜 이 존이 강한지"</strong> 를 구성 신호별로 뜯어본다.</p>
+        <div class="pattern-detail">
+          <h4>체크 항목</h4>
+          <ul>
+            <li><strong>존 티어</strong> — S ≥ 80 / A ≥ 50 / B ≥ 30. B 는 참고용, S/A 만 실전 후보.</li>
+            <li><strong>S/R 측면</strong> — 존이 현재가 <em>위(저항)/아래(지지)/안(내부)</em> 중 어디인가. 방향과 일치해야 함.</li>
+            <li><strong>구성 신호 수</strong> — 피보 / POC / VAH·VAL / 피벗 / 패턴 엣지 중 몇 가지가 겹쳤나 (3개 이상 이상적).</li>
+            <li><strong>거리 (%)</strong> — 현재가에서 얼마나 떨어져 있나. 너무 먼 존 (&gt;5%) 은 접근 전까지 대기.</li>
+          </ul>
+          <h4>이 단계의 출력</h4>
+          <p>"어떤 존에서, 어떤 방향 (롱/숏) 으로 진입을 노릴지" 한 개의 <strong>후보 셋업</strong> 이 결정되어야 합니다. 후보가 2개 이상이면 <em>가장 티어 높은 것 하나</em> 만 남기세요.</p>
+        </div>
+      </div>
+
+      <!-- Step 5 -->
+      <div class="pattern">
+        <div class="pattern-header">
+          <div class="pattern-title">
+            <h3>5단계 · 진입 트리거 확정 (대기)</h3>
+            <span class="tone-badge warning" style="background: rgba(245,158,11,0.18); color: var(--warning);">진입</span>
+          </div>
+        </div>
+        <p class="hook">"존에 도착했다" 만으로는 <strong>아직 들어가지 않는다</strong> — <em>가격이 말해주길 기다린다</em>.</p>
+        <div class="pattern-detail">
+          <h4>유효한 트리거 (택 1 이상)</h4>
+          <ul>
+            <li><strong>반전 캔들 확정</strong> — 핀바 / 엥귤핑 / 망치형 등이 <em>종가</em> 기준 마감.</li>
+            <li><strong>주요 레벨 돌파/이탈 + 리테스트</strong> — 한 번 뚫고, 되돌아와 그 레벨을 지지/저항으로 확인.</li>
+            <li><strong>거래량 스파이크</strong> — 돌파 캔들의 거래량이 평균보다 확연히 큰가.</li>
+            <li><strong>내부 구조 (시장 구조)</strong> — 하위 TF 에서 고점 갱신 / 저점 갱신이 반대 방향으로 뒤집힘.</li>
+          </ul>
+          <h4>가장 흔한 실수</h4>
+          <p>"가격이 존에 닿자마자" 들어가는 것. 존은 <strong>끌어당기는 영역</strong> 일 뿐, 정확한 반전점은 그 안의 어디에서든 일어날 수 있어요. <em>반드시</em> 확정 캔들 또는 구조 변화를 기다리세요.</p>
+        </div>
+      </div>
+
+      <!-- Step 6 -->
+      <div class="pattern">
+        <div class="pattern-header">
+          <div class="pattern-title">
+            <h3>6단계 · 리스크 프레임 설정 (진입 전)</h3>
+            <span class="tone-badge up" style="background: rgba(16,185,129,0.18); color: var(--positive);">리스크</span>
+          </div>
+        </div>
+        <p class="hook">"<strong>얼마를 잃을 수 있는가</strong> 를 먼저 정해야, 얼마나 살지를 정할 수 있다."</p>
+        <div class="pattern-detail">
+          <h4>순서</h4>
+          <ul>
+            <li><strong>손절가 확정</strong> — 존 반대편 + ATR 여유 (보통 1×ATR). 이 지점까지 가면 셋업 무효라고 인정.</li>
+            <li><strong>목표가 확정</strong> — 다음 주요 존 / 피보 연장 / 직전 피벗. 최소 <strong>RR 1.5 이상</strong> 이 이상적.</li>
+            <li><strong>포지션 사이징</strong> — "손절까지 갔을 때 잃는 금액" 이 계좌의 <strong>0.5~1%</strong> 이내가 되도록 수량 계산.</li>
+            <li><strong>레버리지</strong> — 사이징을 먼저 정하고 필요한 만큼만 쓴다 (반대로 하지 말 것).</li>
+          </ul>
+          <div class="callout warn" style="margin-top: 12px;">
+            <strong>🚫 이 단계를 건너뛰면</strong>
+            "감정으로 들어가서 감정으로 청산" 하게 됩니다. 진입 <em>전에</em> 손절·목표·사이즈 3가지가 숫자로 확정 안 되어 있으면 진입하지 마세요.
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 7 -->
+      <div class="pattern">
+        <div class="pattern-header">
+          <div class="pattern-title">
+            <h3>7단계 · AI 예측 교차 확인 (1분)</h3>
+            <span class="tone-badge measurement">교차확인</span>
+          </div>
+        </div>
+        <p class="hook">"<strong>수치로 다른 관점</strong> 에서 같은 결론이 나오는가" — 두 번째 의견을 구하는 단계.</p>
+        <div class="pattern-detail">
+          <h4>체크 항목</h4>
+          <ul>
+            <li><strong>선형회귀 R²</strong> — 0.6 이상이면 추세가 분명. 0.4 미만이면 이 예측은 참고 수준.</li>
+            <li><strong>slope 방향</strong> — 내 진입 방향과 일치해야 이상적 (반대 방향이면 셋업 신뢰도 하향).</li>
+            <li><strong>XGBoost p_cal</strong> — 이 예측이 켜져 있다면 확률이 <strong>롱 ≥ 0.65 / 숏 ≤ 0.35</strong> 인지.</li>
+            <li><strong>두 모델의 동의</strong> — 둘 다 같은 방향이면 신뢰도 한 단계 상승.</li>
+          </ul>
+          <h4>이 단계의 결정</h4>
+          <ul>
+            <li><strong>일치</strong> → 원래 계획한 사이즈로 진입.</li>
+            <li><strong>약한 불일치</strong> → 사이즈 절반으로 축소.</li>
+            <li><strong>강한 불일치</strong> → 진입 취소, 후속 진입 포인트 대기.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Step 8 -->
+      <div class="pattern">
+        <div class="pattern-header">
+          <div class="pattern-title">
+            <h3>8단계 · 주문 실행 + 매매 일지 기록</h3>
+            <span class="tone-badge up" style="background: rgba(16,185,129,0.18); color: var(--positive);">실행</span>
+          </div>
+        </div>
+        <p class="hook">주문을 넣는 <strong>동시에</strong> 그 이유를 적어둔다 — 없으면 피드백도 불가능.</p>
+        <div class="pattern-detail">
+          <h4>주문 실행 체크</h4>
+          <ul>
+            <li>지정가 / 시장가 선택 — <strong>존 리테스트 진입</strong> 은 지정가가 유리, <strong>돌파 추격</strong> 은 시장가.</li>
+            <li>손절 (Stop-Loss) 주문 <strong>동시 등록</strong> — 진입 주문만 놓지 말 것. 거래소 OCO 활용.</li>
+            <li>목표가 (TP) 주문도 같이 걸어두면 좋음 (부분 TP 2단계 권장).</li>
+          </ul>
+          <h4>매매 일지 최소 항목</h4>
+          <ul>
+            <li>심볼 · 방향 · TF · 진입가 · 손절가 · 목표가 · 수량</li>
+            <li><strong>진입 이유 (한 줄)</strong> — "1H 이중바닥 + POC + 피보 0.618 + 강세 다이버전스"</li>
+            <li><strong>무효 조건</strong> — "MA50 이탈 시" 또는 "넥라인 재이탈 시"</li>
+            <li>당시 F&amp;G · 펀딩비 · 예정 이벤트 메모</li>
+          </ul>
+          <p style="margin-top: 8px;">일지가 있어야 나중에 <strong>"왜 이겼는지 / 왜 졌는지"</strong> 를 판단할 수 있어요. 일지 없는 트레이드는 <em>데이터 없는 실험</em> 입니다.</p>
+        </div>
+      </div>
+
+      <!-- Step 9 -->
+      <div class="pattern">
+        <div class="pattern-header">
+          <div class="pattern-title">
+            <h3>9단계 · 포지션 관리 & 사후 회고</h3>
+            <span class="tone-badge up" style="background: rgba(16,185,129,0.18); color: var(--positive);">관리</span>
+          </div>
+        </div>
+        <p class="hook">진입 이후에도 트레이드는 <strong>끝나지 않는다</strong> — 관리와 회고가 실력을 만든다.</p>
+        <div class="pattern-detail">
+          <h4>진행 중 관리</h4>
+          <ul>
+            <li><strong>첫 TP 도달</strong> → 부분 익절 (예: 50%) + 손절을 <strong>본절 (break-even)</strong> 로 이동.</li>
+            <li><strong>다음 저항·지지 근처</strong> → 남은 물량 트레일링 스톱 또는 2차 TP.</li>
+            <li><strong>셋업 무효 신호</strong> — 진입 근거가 깨지면 손절 대기하지 말고 <em>즉시 수동 청산</em>.</li>
+            <li><strong>뉴스 / 이벤트 임박</strong> → 수익이든 손실이든 축소 또는 청산 고려.</li>
+          </ul>
+          <h4>청산 후 회고 (3분)</h4>
+          <ul>
+            <li><strong>결과</strong> — 익절·손절·본절 중 무엇?</li>
+            <li><strong>원인</strong> — 셋업 자체가 좋았나? 트리거가 성급했나? 리스크 관리 실수였나?</li>
+            <li><strong>다음 개선 포인트</strong> 한 가지만 메모 — "1H 다이버전스 없는 존은 피하자" 같은 식.</li>
+          </ul>
+          <div class="callout tip" style="margin-top: 12px;">
+            <strong>💡 회고 1개가 100번의 알림보다 낫다</strong>
+            같은 실수를 반복하지 않는 것 — 이게 장기 승률을 끌어올리는 유일한 방법이에요.
+            매주 10트레이드를 리뷰하며 <strong>패턴화된 실수</strong> 를 찾으세요.
+          </div>
+        </div>
+      </div>
+
+      <div class="callout" style="margin-top: 40px;">
+        <strong>📌 한 장 요약</strong>
+        <strong>환경 → 추세 → 구조 → 존 → 트리거 → 리스크 → AI 교차 → 실행/일지 → 관리/회고.</strong>
+        이 9단계가 돌아갈 때만 "준비된 트레이드" 이고, 한 단계라도 빠졌다면 그건 <em>도박</em> 에 가깝습니다.
+      </div>
+    </section>
+
+    <!-- ============================================================
+         CHAPTER 9 — 실전 체크리스트
+    ============================================================ -->
+    <section class="chapter" id="ch9" data-reveal>
+      <h2><span class="chap-num">Chapter 9</span> 실전 체크리스트 — 알림을 받았을 때</h2>
+
+      <p>
+        이제 이 가이드를 다 읽었다면, 대시보드가 <strong>🟢 S 티어 알림</strong> 을 띄웠을 때
+        "왜" 그 알림이 왔는지를 되짚어볼 수 있어요. 실제로 트레이드에 사용할지는
+        아래 체크리스트를 하나씩 확인하고 판단해주세요.
+      </p>
+
+      <div class="checklist">
+        <h4 style="margin-bottom: 16px;">✅ 알림 수신 직후 5분 체크리스트</h4>
+        <ul>
+          <li><strong>티어 확인</strong> — S/A/B 중 어느 티어인가? S 는 즉시 검토, B 는 참고용.</li>
+          <li><strong>심볼의 현재 추세</strong> — 1D 차트 기준 상승/하락/횡보 중 어느 쪽인가? 추세 반대 셋업은 조심.</li>
+          <li><strong>존의 위치</strong> — 가격이 지금 존 근처인가? 존이 먼 경우 신선도 떨어짐.</li>
+          <li><strong>TF (시간봉) 확인</strong> — 1h 알림은 24~100시간 유효, 4h 알림은 4~16일 유효.</li>
+          <li><strong>구성 신호 확인</strong> — 모달에서 이 존에 어떤 레벨들이 모였는지 (Fib? POC? 이중 바닥?) 확인.</li>
+          <li><strong>거래량 체크</strong> — 존 근처에서 거래량 증가 중인가? 무거래 돌파는 페이크아웃.</li>
+          <li><strong>뉴스 / 거시 이벤트</strong> — FOMC, CPI 등 큰 이벤트 직전/직후는 패턴 무력화 가능.</li>
+          <li><strong>리스크 계산</strong> — 진입 시 손절 거리 × 포지션 크기 = 계좌 1% 이내인가?</li>
+        </ul>
+      </div>
+
+      <div class="callout warn" style="margin-top: 32px;">
+        <strong>⚠️ 절대 규칙</strong>
+        아무리 강한 S 티어라도 <strong>잃어도 괜찮은 금액</strong> 만 걸어야 합니다.
+        패턴은 확률일 뿐, 어떤 시스템도 100% 적중하지 않아요.
+        이 대시보드의 XGBoost v2 도 AUC 0.80 수준 — "5번 중 4번" 정도의 판별력입니다.
+      </div>
+
+      <h3 style="margin-top: 48px;">8.1 대시보드 기능별 빠른 참조</h3>
+      <div class="info-grid">
+        <div class="info-card">
+          <h4>📅 운영 점검 달력</h4>
+          <p>헤더 우측 "A/B" 칩 옆. 매일 13:00 자동 검증 결과 + 주간 튜닝 일정 관리.</p>
+        </div>
+        <div class="info-card">
+          <h4>📋 존 리스트 (우측)</h4>
+          <p>모든 감지된 존을 티어별 정렬. 클릭 → 상세 모달 → 구성 신호 확인.</p>
+        </div>
+        <div class="info-card">
+          <h4>🔔 알림 센터</h4>
+          <p>헤더의 🔔 버튼. 최근 발송된 S/A/B 알림 히스토리.</p>
+        </div>
+        <div class="info-card">
+          <h4>📈 패턴 체크박스</h4>
+          <p>좌측 "감지된 패턴" 목록에서 체크박스 toggle 시 메인 차트에 오버레이 표시.</p>
+        </div>
+      </div>
+
+      <h3 style="margin-top: 48px;">8.2 한 단계 더 — 이 가이드 이후에 공부할 것</h3>
+      <ul style="padding-left: 1rem; margin: 16px 0;">
+        <li><strong>리스크 관리</strong> — 포지션 사이징, 손절 전략, Kelly criterion</li>
+        <li><strong>트레이딩 심리</strong> — 수익 익절, 손절 준수, 과거 패턴 반복 인식</li>
+        <li><strong>거시 경제</strong> — 금리, 달러 지수 (DXY), 국채 수익률이 암호화폐에 미치는 영향</li>
+        <li><strong>온체인 데이터</strong> — Glassnode 같은 온체인 지표 (고래 이동, 거래소 유출입) 와 패턴 병합</li>
+      </ul>
+
+      <div class="lead-quote" style="margin-top: 40px;">
+        "좋은 트레이더는 시장을 이기려 하지 않는다. 시장이 주는 기회만 잡는다." <br>
+        — 이 가이드가 그 기회를 <strong>알아보는 눈</strong> 을 키우는 데 도움이 됐길 바랍니다.
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    function toggleMenu() {
+      var d = document.getElementById('vizMenuDropdown');
+      if (d) d.classList.toggle('open');
+    }
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.viz-menu')) {
+        var d = document.getElementById('vizMenuDropdown');
+        if (d) d.classList.remove('open');
+      }
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        var d = document.getElementById('vizMenuDropdown');
+        if (d) d.classList.remove('open');
+      }
+    });
+
+    var savedTheme = localStorage.getItem('viz-theme');
+    var currentTheme = savedTheme || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+    function applyTheme(t) {
+      document.documentElement.className = 'theme-' + t;
+      var ic = document.getElementById('themeIcon');
+      var lb = document.getElementById('themeLabel');
+      if (ic) ic.textContent = t === 'dark' ? '🌙' : '☀️';
+      if (lb) lb.textContent = t === 'dark' ? 'Dark' : 'Light';
+      localStorage.setItem('viz-theme', t);
+      currentTheme = t;
+      if (typeof onThemeChange === 'function') onThemeChange();
+    }
+    function cycleTheme() { applyTheme(currentTheme === 'dark' ? 'light' : 'dark'); }
+    applyTheme(currentTheme);
+
+    document.querySelectorAll('[data-reveal]').forEach(function(el) { el.classList.add('reveal'); });
+    var revealObserver = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) { if (e.isIntersecting) { e.target.classList.add('visible'); revealObserver.unobserve(e.target); } });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.reveal').forEach(function(el) { revealObserver.observe(el); });
+
+    async function downloadImage() {
+      var menu = document.querySelector('.viz-menu');
+      menu.style.display = 'none';
+      try {
+        var url = await htmlToImage.toPng(document.body, { quality: 1, pixelRatio: 2, filter: function(n) { return !n.classList || !n.classList.contains('viz-menu'); } });
+        var a = document.createElement('a'); a.href = url;
+        a.download = 'patterns-guide.png'; a.click();
+      } catch(e) { console.error('Download failed:', e); }
+      menu.style.display = '';
+    }
+  </script>
+</body>
+</html>

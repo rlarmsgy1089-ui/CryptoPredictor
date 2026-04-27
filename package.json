@@ -1,0 +1,13 @@
+{
+  "name": "crypto-analyzer-pro",
+  "version": "1.0.0",
+  "scripts": {
+    "encrypt": "staticrypt crypto-analyzer.html -p $STATICRYPT_PASSWORD --short -o build && cp build/crypto-analyzer.html index.html"
+  },
+  "dependencies": {
+    "parquetjs-lite": "^0.8.7"
+  },
+  "devDependencies": {
+    "staticrypt": "^3.5.0"
+  }
+}

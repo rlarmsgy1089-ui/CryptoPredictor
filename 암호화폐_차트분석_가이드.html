@@ -1,0 +1,1690 @@
+<!DOCTYPE html>
+<html lang="ko" class="theme-light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>암호화폐 차트 분석 도구 — 초보 투자자용 사용 가이드</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { interpolate-size: allow-keywords; }
+
+    /* ===== THEMES ===== */
+    html.theme-dark {
+      --bg: #0A0A0A; --surface: #141414; --surface-hover: #1C1C1C;
+      --surface-elev: #1f1f1f;
+      --border: rgba(255,255,255,0.08);
+      --border-strong: rgba(255,255,255,0.14);
+      --text: #EDEDED; --text-secondary: #9ca3af;
+      --text-muted: #6b7280;
+      --accent: #38bdf8; --accent-secondary: #818cf8;
+      --positive: #10b981; --negative: #f43f5e; --warning: #f59e0b;
+      --warn-bg: rgba(245, 158, 11, 0.08); --warn-border: rgba(245, 158, 11, 0.35);
+      --tip-bg: rgba(16, 185, 129, 0.08); --tip-border: rgba(16, 185, 129, 0.35);
+      --note-bg: rgba(56, 189, 248, 0.06); --note-border: rgba(56, 189, 248, 0.30);
+      --hero-gradient: radial-gradient(ellipse at top, rgba(56,189,248,0.10), transparent 55%);
+    }
+    html.theme-light {
+      --bg: #fafafa; --surface: #ffffff; --surface-hover: #f4f4f5;
+      --surface-elev: #ffffff;
+      --border: rgba(15,23,42,0.08);
+      --border-strong: rgba(15,23,42,0.14);
+      --text: #0f172a; --text-secondary: #475569;
+      --text-muted: #94a3b8;
+      --accent: #0284c7; --accent-secondary: #6366f1;
+      --positive: #059669; --negative: #dc2626; --warning: #d97706;
+      --warn-bg: #fef3c7; --warn-border: #fbbf24;
+      --tip-bg: #dcfce7; --tip-border: #86efac;
+      --note-bg: #e0f2fe; --note-border: #7dd3fc;
+      --hero-gradient: radial-gradient(ellipse at top, rgba(2,132,199,0.08), transparent 55%);
+    }
+
+    body {
+      font-family: 'Noto Sans KR', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg); color: var(--text);
+      line-height: 1.7; -webkit-font-smoothing: antialiased;
+      letter-spacing: -0.005em;
+      transition: background 0.3s, color 0.3s;
+      scrollbar-gutter: stable;
+    }
+    code, kbd, pre { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; }
+
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--text); letter-spacing: -0.02em;
+      line-height: 1.3; text-wrap: balance;
+      font-family: 'Inter', 'Noto Sans KR', sans-serif;
+    }
+    h1 { font-weight: 800; font-size: 2.5rem; }
+    h2 { font-weight: 700; font-size: 2rem; }
+    h3 { font-weight: 600; font-size: 1.5rem; }
+    h4 { font-weight: 600; font-size: 1.15rem; }
+    body, p, li, td, th, span, label { font-weight: 400; }
+    strong, b { font-weight: 700; color: var(--text); }
+
+    a { color: var(--accent); text-decoration: none; transition: color 0.2s; }
+    a:hover { color: var(--accent-secondary); }
+
+    /* ===== LAYOUT ===== */
+    .page {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 48px;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+
+    /* ===== HERO ===== */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 80px 32px;
+      background: var(--hero-gradient);
+      position: relative;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+      font-weight: 500;
+    }
+    .hero-badge .dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--positive);
+      box-shadow: 0 0 0 3px rgba(16,185,129,0.2);
+    }
+    .hero h1 {
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 800;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, var(--text) 0%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.04em;
+    }
+    .hero-sub {
+      font-size: clamp(1.1rem, 2vw, 1.4rem);
+      color: var(--text-secondary);
+      max-width: 700px;
+      margin: 0 auto 48px;
+      line-height: 1.6;
+    }
+    .hero-meta {
+      display: flex;
+      gap: 32px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 16px;
+    }
+    .hero-meta-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .hero-meta-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 500;
+    }
+    .hero-meta-value {
+      font-size: 16px;
+      color: var(--text);
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .hero-cta {
+      margin-top: 56px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-secondary);
+      font-size: 14px;
+      animation: bounce 2s infinite;
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(8px); }
+    }
+
+    /* ===== SIDEBAR ===== */
+    .sidebar {
+      position: sticky;
+      top: 32px;
+      height: calc(100vh - 64px);
+      overflow-y: auto;
+      padding: 24px 0;
+      border-right: 1px solid var(--border);
+      padding-right: 24px;
+    }
+    .sidebar::-webkit-scrollbar { width: 6px; }
+    .sidebar::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+    .sidebar-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-bottom: 16px;
+      padding-left: 12px;
+    }
+    .toc-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      color: var(--text-secondary);
+      font-size: 14px;
+      transition: all 0.15s;
+      font-weight: 500;
+      margin-bottom: 2px;
+      line-height: 1.4;
+    }
+    .toc-link:hover {
+      background: var(--surface-hover);
+      color: var(--text);
+    }
+    .toc-link.active {
+      background: var(--surface-hover);
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .toc-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 5px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+      flex-shrink: 0;
+    }
+    .toc-link.active .toc-num {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    /* ===== CONTENT ===== */
+    .content {
+      padding: 64px 0 120px;
+      max-width: 760px;
+    }
+    .chapter {
+      scroll-margin-top: 32px;
+      margin-bottom: 80px;
+    }
+    .chapter-header {
+      margin-bottom: 32px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .chapter-eyebrow {
+      font-size: 13px;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-weight: 600;
+      margin-bottom: 8px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .chapter h2 {
+      font-size: clamp(1.75rem, 3vw, 2.25rem);
+      margin-bottom: 8px;
+    }
+    .chapter-lead {
+      font-size: 1.05rem;
+      color: var(--text-secondary);
+      line-height: 1.75;
+    }
+    .chapter h3 {
+      font-size: 1.35rem;
+      margin: 40px 0 12px;
+      font-weight: 700;
+    }
+    .chapter h4 {
+      font-size: 1.05rem;
+      margin: 24px 0 8px;
+      color: var(--text);
+      font-weight: 600;
+    }
+    .chapter p { margin-bottom: 14px; color: var(--text); line-height: 1.75; }
+    .chapter ul, .chapter ol { margin: 12px 0 20px; padding-left: 0; list-style: none; }
+    .chapter li {
+      position: relative;
+      padding-left: 24px;
+      margin-bottom: 10px;
+      line-height: 1.7;
+    }
+    .chapter ul li::before {
+      content: '';
+      position: absolute;
+      left: 6px; top: 13px;
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent);
+    }
+
+    /* ===== BOXES ===== */
+    .callout {
+      display: flex;
+      gap: 16px;
+      padding: 18px 20px;
+      border-radius: 10px;
+      margin: 20px 0;
+      border: 1px solid;
+      align-items: flex-start;
+    }
+    .callout-icon {
+      flex-shrink: 0;
+      width: 24px; height: 24px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .callout-body { flex: 1; }
+    .callout-title {
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: var(--text);
+      font-size: 1rem;
+    }
+    .callout-text { color: var(--text); font-size: 0.95rem; line-height: 1.65; }
+    .callout.warn { background: var(--warn-bg); border-color: var(--warn-border); }
+    .callout.warn .callout-icon { color: var(--warning); }
+    .callout.tip { background: var(--tip-bg); border-color: var(--tip-border); }
+    .callout.tip .callout-icon { color: var(--positive); }
+    .callout.note { background: var(--note-bg); border-color: var(--note-border); }
+    .callout.note .callout-icon { color: var(--accent); }
+
+    /* ===== TABLES ===== */
+    .table-wrap {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 20px 0;
+      background: var(--surface);
+    }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      text-align: left;
+      padding: 12px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-secondary);
+      background: var(--surface-hover);
+      border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.95rem;
+      line-height: 1.6;
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
+    td:first-child {
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      width: 1%;
+      padding-right: 24px;
+    }
+    td code {
+      font-size: 0.85em;
+      padding: 2px 6px;
+      background: var(--surface-hover);
+      border-radius: 4px;
+      color: var(--accent);
+    }
+
+    /* ===== KPI CARDS ===== */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin: 24px 0;
+    }
+    .kpi-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      transition: all 0.2s;
+    }
+    .kpi-card:hover {
+      border-color: var(--border-strong);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+    }
+    .kpi-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .kpi-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+      font-family: 'Inter', sans-serif;
+    }
+    .kpi-note {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    /* ===== ARCHITECTURE DIAGRAM ===== */
+    .arch-diagram {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto 1fr;
+      gap: 12px;
+      align-items: center;
+      margin: 24px 0;
+    }
+    .arch-node {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      text-align: center;
+      min-height: 150px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .arch-node:hover { border-color: var(--accent); box-shadow: 0 4px 12px rgba(0,0,0,0.04); }
+    .arch-node-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: white;
+      font-weight: 700;
+      font-size: 14px;
+      margin: 0 auto 4px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .arch-node-title {
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--text);
+    }
+    .arch-node-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+      margin-bottom: 6px;
+    }
+    .arch-node-list {
+      font-size: 12px;
+      color: var(--text-secondary);
+      text-align: left;
+      padding: 0 4px;
+      line-height: 1.5;
+    }
+    .arch-arrow {
+      color: var(--accent);
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    /* ===== DECISION TREE ===== */
+    .steps {
+      margin: 24px 0;
+      counter-reset: step;
+    }
+    .step {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px 18px 64px;
+      margin-bottom: 12px;
+      counter-increment: step;
+      transition: all 0.2s;
+    }
+    .step:hover { border-color: var(--border-strong); }
+    .step::before {
+      content: counter(step, decimal-leading-zero);
+      position: absolute;
+      left: 16px;
+      top: 18px;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent);
+      color: white;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 13px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .step-title {
+      font-weight: 700;
+      color: var(--text);
+      font-size: 1.05rem;
+      margin-bottom: 4px;
+    }
+    .step-body {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      line-height: 1.7;
+    }
+
+    /* ===== TAB CARDS ===== */
+    .tab-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 16px;
+      transition: all 0.2s;
+    }
+    .tab-card.featured {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent);
+    }
+    .tab-card:hover { border-color: var(--border-strong); }
+    .tab-card.featured:hover { border-color: var(--accent); }
+    .tab-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .tab-num {
+      background: var(--surface-hover);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .tab-card.featured .tab-num {
+      background: var(--accent);
+      color: white;
+    }
+    .tab-title {
+      font-weight: 700;
+      font-size: 1.15rem;
+      color: var(--text);
+    }
+    .tab-star { color: var(--warning); font-size: 14px; }
+    .tab-meta {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 8px 16px;
+      margin-bottom: 14px;
+      font-size: 0.95rem;
+    }
+    .tab-meta-label {
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .tab-meta-value { color: var(--text); }
+    .tab-metrics {
+      border-top: 1px solid var(--border);
+      padding-top: 14px;
+      margin-top: 14px;
+    }
+    .tab-metrics-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .tab-metrics ul { margin: 0; padding: 0; list-style: none; }
+    .tab-metrics li {
+      padding-left: 20px;
+      position: relative;
+      font-size: 0.92rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 6px;
+    }
+    .tab-metrics li::before {
+      content: '→';
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    /* ===== MISTAKE CARD ===== */
+    .mistake {
+      background: var(--surface);
+      border-left: 3px solid var(--negative);
+      border-radius: 6px;
+      padding: 16px 20px;
+      margin-bottom: 12px;
+    }
+    .mistake-title {
+      font-weight: 700;
+      color: var(--negative);
+      margin-bottom: 6px;
+      font-size: 1rem;
+    }
+    .mistake-title::before { content: '✗ '; }
+    .mistake-body {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      line-height: 1.7;
+    }
+    .mistake-body::before {
+      content: '→ ';
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    /* ===== CHECKLIST ===== */
+    .checklist {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin: 20px 0;
+    }
+    .checklist-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px dashed var(--border);
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+    .checklist-item:last-child { border-bottom: none; }
+    .checklist-box {
+      width: 20px; height: 20px;
+      border: 1.5px solid var(--border-strong);
+      border-radius: 4px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    /* ===== REGIME PILLS ===== */
+    .regime-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+      margin: 16px 0;
+    }
+    .regime-pill {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+    .regime-pill-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .regime-pill-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+    .regime-pill.trend-up .regime-pill-name { color: var(--positive); }
+    .regime-pill.trend-down .regime-pill-name { color: var(--negative); }
+    .regime-pill.range .regime-pill-name { color: var(--accent); }
+    .regime-pill.high-vol .regime-pill-name { color: var(--warning); }
+
+    /* ===== BADGE STATES ===== */
+    .badge-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin: 16px 0;
+    }
+    .badge-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 12px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    .badge-pill {
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+    .badge-pill.insufficient { background: rgba(107,114,128,0.15); color: var(--text-secondary); }
+    .badge-pill.ok { background: rgba(16,185,129,0.15); color: var(--positive); }
+    .badge-pill.warn { background: rgba(245,158,11,0.15); color: var(--warning); }
+    .badge-pill.critical { background: rgba(244,63,94,0.15); color: var(--negative); }
+    .badge-desc { font-size: 0.92rem; color: var(--text-secondary); line-height: 1.6; flex: 1; }
+
+    /* ===== DAILY ROUTINE STEPS ===== */
+    .routine {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+      margin: 20px 0;
+    }
+    .routine-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px;
+      position: relative;
+      transition: all 0.2s;
+    }
+    .routine-card:hover { border-color: var(--accent); }
+    .routine-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--accent);
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      margin-bottom: 6px;
+    }
+    .routine-title {
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+    .routine-desc {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      line-height: 1.55;
+    }
+
+    /* ===== FINAL CARD ===== */
+    .final-card {
+      background: linear-gradient(135deg, var(--surface) 0%, var(--surface-hover) 100%);
+      border: 1px solid var(--accent);
+      border-radius: 16px;
+      padding: 40px;
+      text-align: center;
+      margin: 48px 0;
+    }
+    .final-card h3 {
+      font-size: 1.5rem;
+      margin-bottom: 12px;
+      color: var(--accent);
+    }
+    .final-card p {
+      font-size: 1.05rem;
+      color: var(--text);
+      line-height: 1.8;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate { animation: fadeInUp 0.7s ease-out both; }
+    .animate.delay-1 { animation-delay: 0.08s; }
+    .animate.delay-2 { animation-delay: 0.16s; }
+    .animate.delay-3 { animation-delay: 0.24s; }
+    .animate.delay-4 { animation-delay: 0.32s; }
+    .animate.delay-5 { animation-delay: 0.40s; }
+
+    .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      .reveal { opacity: 1; transform: none; }
+    }
+
+    /* ===== PRINT ===== */
+    @media print {
+      body { background: white !important; color: black !important; }
+      .viz-menu, .sidebar { display: none !important; }
+      .page { grid-template-columns: 1fr; padding: 0; }
+      .hero { min-height: auto; padding: 40px 0; page-break-after: always; }
+      .chapter { page-break-inside: avoid; margin-bottom: 40px; }
+      .callout, .tab-card, .routine-card, .kpi-card, .step { break-inside: avoid; }
+      * { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    }
+    @page { margin: 18mm; @bottom-center { content: "Page " counter(page); font-size: 9pt; color: #666; } }
+
+    /* ===== MENU ===== */
+    .viz-menu { position: fixed; top: 16px; right: 16px; z-index: 9999; }
+    .viz-menu-toggle {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--text); cursor: pointer; display: flex;
+      align-items: center; justify-content: center;
+      backdrop-filter: blur(12px); transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .viz-menu-toggle:hover { background: var(--surface-hover); }
+    .viz-menu-dropdown {
+      position: absolute; top: 52px; right: 0; min-width: 200px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 8px;
+      opacity: 0; visibility: hidden; transform: translateY(-8px);
+      transition: all 0.2s; backdrop-filter: blur(16px);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.08);
+    }
+    .viz-menu-dropdown.open { opacity: 1; visibility: visible; transform: translateY(0); }
+    .viz-menu-dropdown button {
+      width: 100%; padding: 10px 14px; border: none; border-radius: 8px;
+      background: transparent; color: var(--text); font-size: 14px;
+      font-family: inherit; cursor: pointer; text-align: left;
+      display: flex; align-items: center; gap: 10px; transition: background 0.15s;
+    }
+    .viz-menu-dropdown button:hover { background: var(--surface-hover); }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 960px) {
+      .page { grid-template-columns: 1fr; gap: 0; padding: 0 20px; }
+      .sidebar { display: none; }
+      .content { padding: 40px 0 80px; }
+      .arch-diagram { grid-template-columns: 1fr; gap: 8px; }
+      .arch-arrow { transform: rotate(90deg); margin: 4px 0; }
+    }
+    @media (max-width: 375px) {
+      body { overflow-x: hidden; }
+      .hero h1 { font-size: 2rem; }
+      .hero-sub { font-size: 1rem; }
+      .hero-meta { gap: 20px; }
+      h1 { font-size: 1.75rem; }
+      h2 { font-size: 1.5rem; }
+      h3 { font-size: 1.2rem; }
+      .chapter h2 { font-size: 1.4rem; }
+      td:first-child { white-space: normal; }
+    }
+  </style>
+</head>
+<body>
+  <!-- MENU -->
+  <div class="viz-menu">
+    <button class="viz-menu-toggle" onclick="toggleMenu()" aria-label="메뉴">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="3" y1="5" x2="17" y2="5"/><line x1="3" y1="10" x2="17" y2="10"/><line x1="3" y1="15" x2="17" y2="15"/>
+      </svg>
+    </button>
+    <div class="viz-menu-dropdown" id="vizMenuDropdown">
+      <button onclick="cycleTheme()"><span id="themeIcon">☀️</span><span id="themeLabel">Light</span></button>
+      <button onclick="downloadImage()"><span>📥</span><span>Download PNG</span></button>
+      <button onclick="window.print()"><span>🖨️</span><span>Print / PDF</span></button>
+    </div>
+  </div>
+
+  <main id="main-content" role="main">
+
+    <!-- ========== HERO ========== -->
+    <section class="hero">
+      <div class="hero-badge animate">
+        <span class="dot"></span>
+        <span>v1.0 · 2026년 4월 19일 · 챔피언 xgb-wfv-v1.2.0</span>
+      </div>
+      <h1 class="animate delay-1">암호화폐 차트 분석 도구</h1>
+      <p class="hero-sub animate delay-2">
+        초보 투자자를 위한 사용 가이드.<br/>
+        BTC · ETH · SOL 전문가 수준 대시보드를 어떻게 읽고, 무엇을 참고해야 하는지.
+      </p>
+      <div class="hero-meta animate delay-3">
+        <div class="hero-meta-item">
+          <div class="hero-meta-label">대상 자산</div>
+          <div class="hero-meta-value">BTC · ETH · SOL</div>
+        </div>
+        <div class="hero-meta-item">
+          <div class="hero-meta-label">예측 엔진</div>
+          <div class="hero-meta-value">XGBoost WFV</div>
+        </div>
+        <div class="hero-meta-item">
+          <div class="hero-meta-label">갱신 주기</div>
+          <div class="hero-meta-value">15분</div>
+        </div>
+        <div class="hero-meta-item">
+          <div class="hero-meta-label">호라이즌</div>
+          <div class="hero-meta-value">15m / 1h / 4h</div>
+        </div>
+      </div>
+      <div class="hero-cta animate delay-5">
+        <span>아래로 스크롤해서 시작</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+    </section>
+
+    <!-- ========== MAIN LAYOUT ========== -->
+    <div class="page">
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <div class="sidebar-title">목차</div>
+        <a href="#ch1" class="toc-link"><span class="toc-num">01</span><span>개요</span></a>
+        <a href="#ch2" class="toc-link"><span class="toc-num">02</span><span>전체 구조</span></a>
+        <a href="#ch3" class="toc-link"><span class="toc-num">03</span><span>매일 사용 루틴</span></a>
+        <a href="#ch4" class="toc-link"><span class="toc-num">04</span><span>화면 투어 (6개 탭)</span></a>
+        <a href="#ch5" class="toc-link"><span class="toc-num">05</span><span>AI 예측 심층 해석</span></a>
+        <a href="#ch6" class="toc-link"><span class="toc-num">06</span><span>시스템 건강 체크</span></a>
+        <a href="#ch7" class="toc-link"><span class="toc-num">07</span><span>자주 하는 실수</span></a>
+        <a href="#ch8" class="toc-link"><span class="toc-num">08</span><span>용어 사전</span></a>
+        <a href="#ch9" class="toc-link"><span class="toc-num">09</span><span>빠른 참조 카드</span></a>
+      </aside>
+
+      <!-- CONTENT -->
+      <div class="content">
+
+        <!-- ========== CHAPTER 1 ========== -->
+        <section class="chapter" id="ch1">
+          <div class="chapter-header">
+            <div class="chapter-eyebrow">Chapter 01</div>
+            <h2>이 도구는 무엇인가</h2>
+            <p class="chapter-lead">
+              BTC · ETH · SOL 의 <strong>단기 방향(오를지/내릴지)을 확률로 알려주는 개인용 대시보드</strong>.
+              네 Mac 에서 15분마다 자동으로 돌아가면서 Binance 공개 시세·펀딩비·미결제약정(OI)·공포탐욕지수
+              등을 수집하고, XGBoost 머신러닝 모델이 학습한 패턴으로 15분/1시간/4시간 뒤의 가격 방향을 예측해.
+            </p>
+          </div>
+
+          <h3>✅ 이 도구가 할 수 있는 것</h3>
+          <ul>
+            <li>15분~4시간 단기 방향(상승/하락/중립) 확률 계산</li>
+            <li>현재 시장이 추세장인지 횡보장인지 자동 감지 (레짐)</li>
+            <li>모델이 <strong>과거 데이터에서 얼마나 맞췄는지</strong> 지속 추적 (드리프트)</li>
+            <li>백테스트로 여러 전략을 과거 구간에 돌려 성과 비교</li>
+            <li>지지·저항 레벨, 차트 패턴(삼각수렴·쐐기 등) 자동 표시</li>
+            <li>청산맵·공포탐욕·펀딩비 등 외부 시그널 집계</li>
+          </ul>
+
+          <h3>❌ 이 도구가 <strong>하지 않는 것</strong></h3>
+          <ul>
+            <li>실제 주문 · 거래 자동화 (<strong>트레이딩 봇 아님</strong>. 거래소 API 키도 안 받음)</li>
+            <li>"반드시 오른다/내린다" 같은 확정 예언</li>
+            <li>뉴스·이벤트·블랙스완 예측</li>
+            <li>장기(일/주/월) 가격 목표 예측</li>
+            <li>네가 감당할 수 없는 포지션 사이즈 추천</li>
+          </ul>
+
+          <div class="callout warn">
+            <div class="callout-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <div class="callout-body">
+              <div class="callout-title">예측은 "확률적 참고 자료" 다</div>
+              <div class="callout-text">
+                모델 정확도가 52% 면, 100번 중 52번 맞춘다는 뜻이야. <strong>한 번 틀리는 건 문제가 아니다</strong>
+                — 오히려 당연한 일. 중요한 건 수백 번 반복했을 때 평균이 유리한가(기댓값 &gt; 0) 인지.
+                그래서 <strong>리스크 관리(손절, 포지션 사이즈)</strong> 가 예측 정확도보다 더 중요해.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========== CHAPTER 2 ========== -->
+        <section class="chapter" id="ch2">
+          <div class="chapter-header">
+            <div class="chapter-eyebrow">Chapter 02</div>
+            <h2>전체 구조 한눈에 보기</h2>
+            <p class="chapter-lead">
+              구성 요소는 3개야. 서로 파일 하나로 통신해 — 복잡해 보이지만 실제론 단순한 파이프라인.
+            </p>
+          </div>
+
+          <div class="arch-diagram">
+            <div class="arch-node">
+              <div class="arch-node-num">1</div>
+              <div class="arch-node-title">Mac 백엔드</div>
+              <div class="arch-node-sub">predictor.py</div>
+              <div class="arch-node-list">
+                • Binance 시세 수집<br/>
+                • 40+ 피처 계산<br/>
+                • XGBoost 예측 생성<br/>
+                • 로그 · 드리프트 추적
+              </div>
+            </div>
+            <div class="arch-arrow">→</div>
+            <div class="arch-node">
+              <div class="arch-node-num">2</div>
+              <div class="arch-node-title">공유 파일</div>
+              <div class="arch-node-sub">predictions.json</div>
+              <div class="arch-node-list">
+                • 15분마다 갱신<br/>
+                • 방향 / 확률<br/>
+                • 외부 시그널<br/>
+                • 레짐 · 신뢰도
+              </div>
+            </div>
+            <div class="arch-arrow">→</div>
+            <div class="arch-node">
+              <div class="arch-node-num">3</div>
+              <div class="arch-node-title">브라우저 UI</div>
+              <div class="arch-node-sub">crypto-analyzer.html</div>
+              <div class="arch-node-list">
+                • UI 자동 새로고침<br/>
+                • 차트 · 예측 · 히트율<br/>
+                • 백테스트 · 패턴<br/>
+                • 직접 열기만 하면 됨
+              </div>
+            </div>
+          </div>
+
+          <h3>핵심 포인트</h3>
+          <ul>
+            <li><strong>브라우저는 Binance 와 직접 통신 안 해</strong> — 네 Mac 이 만든 JSON 파일만 읽음.</li>
+            <li>Mac 이 꺼져 있으면 JSON 이 갱신 안 되고, 브라우저는 옛날 값을 보여줌.</li>
+            <li>그래서 <strong>Mac 자동 실행(launchd)</strong> 이 설치되어 있어야 함.</li>
+            <li>예측기의 <strong>챔피언 모델 버전</strong> 은 현재 <strong>xgb-wfv-v1.2.0</strong> (2026-04-19 승격).</li>
+          </ul>
+
+          <h3>파일 구조 (중요한 것만)</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>파일</th><th>역할</th></tr></thead>
+              <tbody>
+                <tr><td><code>crypto-analyzer.html</code></td><td>브라우저 UI. 이 파일만 더블클릭하면 됨.</td></tr>
+                <tr><td><code>predictor/predictor.py</code></td><td>AI 모델 코어. 15분마다 실행됨.</td></tr>
+                <tr><td><code>predictions_BTCUSDT.json</code></td><td>최신 BTC 예측 결과. UI 가 이 파일을 읽음.</td></tr>
+                <tr><td><code>predictor/run_auto.sh</code></td><td>자동 실행 래퍼 스크립트 (launchd 가 호출).</td></tr>
+                <tr><td><code>logs/run_auto.log</code></td><td>실행 기록. 문제 생기면 여기 먼저 확인.</td></tr>
+                <tr><td><code>logs/stats.json</code></td><td>라이브 성능 (히트율, 드리프트) 집계.</td></tr>
+                <tr><td><code>logs/drift_history.jsonl</code></td><td>드리프트 히스토리 (재학습 판단 근거).</td></tr>
+                <tr><td><code>predictor/automation/</code></td><td>launchd 설치/해제/상태 스크립트들.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ========== CHAPTER 3 ========== -->
+        <section class="chapter" id="ch3">
+          <div class="chapter-header">
+            <div class="chapter-eyebrow">Chapter 03</div>
+            <h2>매일 사용 루틴 — 투자자 관점</h2>
+            <p class="chapter-lead">
+              <strong>"이 도구를 실제로 어떻게 굴려 써?"</strong> 에 대한 답. 기술 설명이 아니고, 투자자가
+              하루 중 언제 / 뭘 보는지 정리한 실무 루틴이야.
+            </p>
+          </div>
+
+          <h3>3.1 아침 5분 체크리스트</h3>
+          <p>일어나자마자 브라우저 열고 아래 순서대로 훑어봐.</p>
+
+          <div class="routine">
+            <div class="routine-card">
+              <div class="routine-num">01</div>
+              <div class="routine-title">as_of 시각 확인</div>
+              <div class="routine-desc">AI 예측 탭 상단. 지금 시각으로부터 <strong>20분 이내</strong>면 정상. 넘어가면 자동화가 멈춘 것 — status.command 실행.</div>
+            </div>
+            <div class="routine-card">
+              <div class="routine-num">02</div>
+              <div class="routine-title">3개 호라이즌 방향</div>
+              <div class="routine-desc">15m/1h/4h 모두 UP 이면 매수 편향, 모두 DOWN 이면 매도 편향. 섞이면 <strong>혼조 — 관망</strong>.</div>
+            </div>
+            <div class="routine-card">
+              <div class="routine-num">03</div>
+              <div class="routine-title">레짐 확인</div>
+              <div class="routine-desc">high_vol(고변동): 포지션 축소. range: 돌파 대기. trend_up/down: 추세 따라가기.</div>
+            </div>
+            <div class="routine-card">
+              <div class="routine-num">04</div>
+              <div class="routine-title">드리프트 배지</div>
+              <div class="routine-desc">빨간 "재학습 권장" 배지 있으면 주의. 해당 호라이즌 신뢰도 한 단계 낮춰 봐.</div>
+            </div>
+            <div class="routine-card">
+              <div class="routine-num">05</div>
+              <div class="routine-title">시장 온도계</div>
+              <div class="routine-desc">공포탐욕 80+: 조정 가능. 20-: 반등 가능. 펀딩비 비정상 +: 롱 과밀 → 단기 조정 위험.</div>
+            </div>
+          </div>
+
+          <h3>3.2 진입 판단 순서 (의사결정 트리)</h3>
+          <p>"사도 될까?" 라는 질문이 생기면, 아래 5단계를 순서대로 통과시켜. 하나라도 막히면 그날은 진입 보류.</p>
+
+          <div class="steps">
+            <div class="step">
+              <div class="step-title">추세 정렬</div>
+              <div class="step-body">15m · 1h · 4h 방향이 <strong>최소 2개 이상 같은 방향</strong> 인가? (예: 15m UP + 1h UP + 4h NEUTRAL)</div>
+            </div>
+            <div class="step">
+              <div class="step-title">확률 최소 기준</div>
+              <div class="step-body">1h 또는 4h 에서 <strong>prob_up ≥ 0.58</strong> 또는 <strong>≤ 0.42</strong> 인가? 0.55 미만은 노이즈와 구분 안 됨.</div>
+            </div>
+            <div class="step">
+              <div class="step-title">레짐 궁합</div>
+              <div class="step-body">현재 레짐이 내 트레이드 스타일과 맞나? (돌파 매수면 range 탈출 or trend 확립 때, 평균회귀면 range 중간대)</div>
+            </div>
+            <div class="step">
+              <div class="step-title">외부 시그널 상충 여부</div>
+              <div class="step-body">공포탐욕 극단 / 펀딩비 극단 / OI 급증 이 내 방향과 <strong>반대</strong> 로 가면 재고. (예: 예측 UP인데 공포탐욕 85 + 펀딩비 +0.1% → 롱 피로)</div>
+            </div>
+            <div class="step">
+              <div class="step-title">리스크 관리 확정</div>
+              <div class="step-body">SL 가격 결정 → 손실 % 계산 → 포지션 사이즈 역산. <strong>SL 없이 진입은 도박.</strong> 도구의 suggested_sl_pct 참조, 무조건 같을 필요는 없음.</div>
+            </div>
+          </div>
+
+          <div class="callout tip">
+            <div class="callout-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.74V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.26A7 7 0 0 0 12 2z"/></svg>
+            </div>
+            <div class="callout-body">
+              <div class="callout-title">통과 못하는 날이 더 많다는 게 정상</div>
+              <div class="callout-text">
+                5단계를 깐깐하게 돌리면 하루에 0~1회 진입이 평범해. <strong>거래 빈도가 수익의 적</strong>.
+                기회가 없으면 아예 하루 안 들어가는 것도 훌륭한 의사결정.
+              </div>
+            </div>
+          </div>
+
+          <h3>3.3 포지션 중 관리</h3>
+          <p>진입 후엔 도구의 역할이 바뀜 — "예측 확인" 이 아니라 "가설 검증" 이 됨.</p>
+          <ul>
+            <li>매 15분 갱신될 때마다 내 포지션 방향과 <strong>예측이 계속 일치하는지</strong> 확인.</li>
+            <li>예측 방향이 반대로 바뀌었으면 (UP→DOWN) <strong>가설 붕괴</strong> — 손절 or 절반 이익 실현 고려.</li>
+            <li>레짐이 바뀌면 (range → high_vol) 변동성 확대 → SL 여유 넓히거나 포지션 축소.</li>
+            <li>드리프트 플래그가 떴으면 목표 이익 축소 (모델 신뢰도가 낮아진 상태).</li>
+          </ul>
+
+          <h3>3.4 청산 · 재평가</h3>
+          <ul>
+            <li><strong>TP 도달</strong>: 계획대로 청산. 욕심 부리지 말고 일부만 남겨도 OK.</li>
+            <li><strong>SL 도달</strong>: 감정 없이 청산. "조금만 기다려 보자" 가 계좌 파괴 1순위.</li>
+            <li><strong>시간 초과</strong>: 4h 예측 진입이면 4h 후에도 방향 안 나오면 기회비용 — 청산 후 재진입 기회 탐색.</li>
+            <li><strong>매매 후 기록</strong>: 진입 사유 · 예측값 · 청산 사유 · 결과를 적어두면 <strong>네 판단의 드리프트</strong>도 볼 수 있음.</li>
+          </ul>
+        </section>
+
+        <!-- ========== CHAPTER 4 ========== -->
+        <section class="chapter" id="ch4">
+          <div class="chapter-header">
+            <div class="chapter-eyebrow">Chapter 04</div>
+            <h2>화면 투어 — 6개 탭 가이드</h2>
+            <p class="chapter-lead">
+              상단 탭 6개를 왼쪽에서 오른쪽 순서로 설명할게. 투자 결정엔 <strong>AI 예측 탭</strong> 이 중심이고 나머진 보조야.
+            </p>
+          </div>
+
+          <div class="tab-card">
+            <div class="tab-header">
+              <span class="tab-num">Tab 1</span>
+              <span class="tab-title">지표 요약 (기본값)</span>
+            </div>
+            <div class="tab-meta">
+              <span class="tab-meta-label">용도</span><span class="tab-meta-value">현재 가격 · 변동률 · 거래량 · 주요 이동평균 · RSI · MACD · 볼린저밴드 한눈에.</span>
+              <span class="tab-meta-label">언제 보나</span><span class="tab-meta-value">가장 먼저 열어서 "지금 이 코인이 어디쯤 있는지" 감 잡을 때.</span>
+            </div>
+            <div class="tab-metrics">
+              <div class="tab-metrics-label">주요 지표</div>
+              <ul>
+                <li><strong>현재가 vs MA20/MA50/MA200</strong>: 위에 있으면 상승 구조, 아래면 하락 구조</li>
+                <li><strong>RSI(14)</strong>: 70+ 과매수, 30- 과매도 (단, 강추세에선 오래 머무름)</li>
+                <li><strong>MACD</strong>: 0선 위아래와 히스토그램 방향</li>
+                <li><strong>BB 위치</strong>: 상단 돌파·하단 돌파 시점은 변동성 확대 신호</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="tab-card">
+            <div class="tab-header">
+              <span class="tab-num">Tab 2</span>
+              <span class="tab-title">패턴 인식</span>
+            </div>
+            <div class="tab-meta">
+              <span class="tab-meta-label">용도</span><span class="tab-meta-value">삼각수렴·쐐기·헤드앤숄더 등 클래식 차트 패턴 자동 검출.</span>
+              <span class="tab-meta-label">언제 보나</span><span class="tab-meta-value">수동 차트 보기 싫을 때, 큰 그림 구조 확인할 때.</span>
+            </div>
+            <div class="tab-metrics">
+              <div class="tab-metrics-label">주요 지표</div>
+              <ul>
+                <li><strong>패턴 신뢰도</strong>: 높을수록 교과서적 — 낮으면 모양만 비슷할 수 있음</li>
+                <li><strong>돌파 예상 방향</strong>: 패턴이 시사하는 결말</li>
+                <li><strong>측정 가격</strong>: 패턴 달성 시 예상 목표가 (참고만)</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="tab-card featured">
+            <div class="tab-header">
+              <span class="tab-num">Tab 3</span>
+              <span class="tab-title">AI 예측 <span class="tab-star">★ 가장 중요</span></span>
+            </div>
+            <div class="tab-meta">
+              <span class="tab-meta-label">용도</span><span class="tab-meta-value">XGBoost 기반 방향·확률 예측. 이 도구의 핵심.</span>
+              <span class="tab-meta-label">언제 보나</span><span class="tab-meta-value">하루 중 가장 자주 보는 탭. 진입/청산 판단의 중심.</span>
+            </div>
+            <div class="tab-metrics">
+              <div class="tab-metrics-label">주요 지표</div>
+              <ul>
+                <li><strong>15m/1h/4h PRO 예측 카드</strong>: 방향 · 확률 · 기대 수익 · SL 제안</li>
+                <li><strong>신뢰도 / 안정성</strong>: 확률 얼마나 믿을지 보조 지표</li>
+                <li><strong>레짐</strong>: 현재 시장 상태 (4가지)</li>
+                <li><strong>라이브 모델 성능</strong>: 최근 실제 히트율 vs 백테스트 히트율 (드리프트)</li>
+                <li><strong>시장 온도계</strong>: 공포탐욕 / 펀딩비 / OI 등 외부 시그널</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="tab-card">
+            <div class="tab-header">
+              <span class="tab-num">Tab 4</span>
+              <span class="tab-title">백테스팅</span>
+            </div>
+            <div class="tab-meta">
+              <span class="tab-meta-label">용도</span><span class="tab-meta-value">전략을 과거 구간에 돌려 "얼마나 벌었을까?" 시뮬레이션.</span>
+              <span class="tab-meta-label">언제 보나</span><span class="tab-meta-value">새 전략 아이디어 테스트할 때, "진짜 이게 먹혔나?" 검증할 때.</span>
+            </div>
+            <div class="tab-metrics">
+              <div class="tab-metrics-label">주요 지표</div>
+              <ul>
+                <li><strong>전략 종류</strong>: MA 크로스, RSI 반전, MACD, BB, 삼중 확인 등</li>
+                <li><strong>초기 자본 · 수수료</strong>: 실제 거래소 조건과 맞춰야 의미 있음</li>
+                <li><strong>결과 지표</strong>: 수익률 · 최대 낙폭(MDD) · 샤프 · 승률 · 거래 횟수</li>
+                <li><strong>HTF 필터</strong>: 상위 타임프레임 추세와 같은 방향일 때만 매매</li>
+              </ul>
+            </div>
+            <div class="callout note" style="margin-top:14px;">
+              <div class="callout-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              </div>
+              <div class="callout-body">
+                <div class="callout-text">MDD 50% 넘는 전략은 실전에서 버티기 어려움. <strong>수익률만 보지 말 것.</strong></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tab-card">
+            <div class="tab-header">
+              <span class="tab-num">Tab 5</span>
+              <span class="tab-title">온체인</span>
+            </div>
+            <div class="tab-meta">
+              <span class="tab-meta-label">용도</span><span class="tab-meta-value">거래소 유입량, 대규모 이체 등 온체인 이벤트 추적.</span>
+              <span class="tab-meta-label">언제 보나</span><span class="tab-meta-value">주봉 이상 큰 그림 판단할 때. 단타엔 큰 영향 없음.</span>
+            </div>
+            <div class="tab-metrics">
+              <div class="tab-metrics-label">주요 지표</div>
+              <ul>
+                <li><strong>거래소 유입</strong>: 급증 시 매도 압력 가능성</li>
+                <li><strong>대형 지갑 이동</strong>: 고래 활동 감지</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="tab-card">
+            <div class="tab-header">
+              <span class="tab-num">Tab 6</span>
+              <span class="tab-title">사용법 (도구 내장)</span>
+            </div>
+            <div class="tab-meta">
+              <span class="tab-meta-label">용도</span><span class="tab-meta-value">브라우저 안에 들어있는 간단 안내. 이 가이드가 더 자세함.</span>
+              <span class="tab-meta-label">언제 보나</span><span class="tab-meta-value">링크 확인용.</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========== CHAPTER 5 ========== -->
+        <section class="chapter" id="ch5">
+          <div class="chapter-header">
+            <div class="chapter-eyebrow">Chapter 05</div>
+            <h2>AI 예측 탭 심층 해석</h2>
+            <p class="chapter-lead">
+              이 도구의 핵심 화면. 각 필드가 무슨 뜻인지, 어떻게 조합해서 읽는지 정리.
+            </p>
+          </div>
+
+          <h3>5.1 PRO 예측 카드 4개 필드</h3>
+          <p>15m / 1h / 4h 각 호라이즌마다 카드 하나씩. 각 카드는 4가지 핵심 필드를 담고 있어.</p>
+
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-label">direction</div>
+              <div class="kpi-value">UP · DOWN · NEUTRAL</div>
+              <div class="kpi-note">prob_up 0.55+ → UP, 0.45- → DOWN, 그 사이 → NEUTRAL</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">prob_up</div>
+              <div class="kpi-value">0.00 ~ 1.00</div>
+              <div class="kpi-note">50%는 동전던지기. 55%+ 의미, 60%+ 강한 신호.</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">expected_move_pct</div>
+              <div class="kpi-value">±0.00%</div>
+              <div class="kpi-note">만기까지 예상 가격 변동률. 음수면 UP 예측이어도 하락 기댓값.</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">suggested_sl_pct</div>
+              <div class="kpi-value">0.00%</div>
+              <div class="kpi-note">모델이 계산한 권장 손절 폭. high_vol에선 커짐. 본인 성향에 맞게 조정.</div>
+            </div>
+          </div>
+
+          <div class="callout warn">
+            <div class="callout-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <div class="callout-body">
+              <div class="callout-title">확률 읽기 주의</div>
+              <div class="callout-text">
+                63% 는 "절대 올라간다" 가 아니고 "100번 중 63번 올랐다" 는 과거 패턴 기반 추정. 즉 37번은 틀린다는 뜻.
+                <strong>1회 결과로 모델을 평가하지 말 것.</strong> 수십 회 평균을 봐야 의미 있음.
+              </div>
+            </div>
+          </div>
+
+          <h3>5.2 신뢰도 · 안정성 · 레짐</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>필드</th><th>의미</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><code>accuracy_wfv</code></td>
+                  <td>Walk-Forward 검증 정확도. "과거에 이 모델이 이 호라이즌에서 얼마나 맞췄나." 15m 은 52~55%, 4h 는 53~58% 가 일반적. <strong>50% 근처는 가치 없음.</strong></td>
+                </tr>
+                <tr>
+                  <td><code>accuracy_std</code></td>
+                  <td>정확도의 표준편차. 작을수록 <strong>꾸준</strong>. 0.02 이하: 안정 / 0.02~0.05: 보통 / 0.05+: 변동성 큼 → 신뢰 낮춤.</td>
+                </tr>
+                <tr>
+                  <td><code>regime</code></td>
+                  <td>시장 상태 4가지 (아래 박스).</td>
+                </tr>
+                <tr>
+                  <td><code>Kelly</code></td>
+                  <td>켈리 공식 기반 이론적 최적 베팅 비율. <strong>그대로 쓰면 위험</strong> — 실전은 1/4 켈리 정도가 보수적. 참고용.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h4>레짐 4가지</h4>
+          <div class="regime-grid">
+            <div class="regime-pill range">
+              <div class="regime-pill-name">range</div>
+              <div class="regime-pill-desc">횡보. 상하단 사이 왕복. 돌파 대비.</div>
+            </div>
+            <div class="regime-pill trend-up">
+              <div class="regime-pill-name">trend_up</div>
+              <div class="regime-pill-desc">상승 추세. 방향 따라가기 유리.</div>
+            </div>
+            <div class="regime-pill trend-down">
+              <div class="regime-pill-name">trend_down</div>
+              <div class="regime-pill-desc">하락 추세. 방향 따라가기 유리.</div>
+            </div>
+            <div class="regime-pill high-vol">
+              <div class="regime-pill-name">high_vol</div>
+              <div class="regime-pill-desc">고변동. 포지션 축소, SL 넓힘.</div>
+            </div>
+          </div>
+
+          <h3>5.3 라이브 모델 성능 (드리프트)</h3>
+          <p>여기가 <strong>이 도구의 가장 중요한 자기 점검 장치</strong>. 모델이 만든 예측이 실제 시장에서 얼마나 맞는지, 백테스트 때와 괴리 없이 가고 있는지 보여줘.</p>
+
+          <h4>핵심 숫자 3개</h4>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>지표</th><th>설명</th></tr></thead>
+              <tbody>
+                <tr><td><code>live_rate</code></td><td>최근 라이브 예측 중 실제로 맞춘 비율. 예: 0.52 = 52%.</td></tr>
+                <tr><td><code>wfv_rate</code></td><td>같은 호라이즌의 백테스트(Walk-Forward) 정확도. "원래 이만큼 맞춰야 한다" 는 기준선.</td></tr>
+                <tr><td><code>drift</code></td><td>live - wfv 차이. <strong>0 에 가까울수록 건강.</strong> -5%p 넘으면 주의, -7%p 넘고 3회 연속이면 재학습 권장.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h4>재학습 권장 배지 해석</h4>
+          <div class="badge-list">
+            <div class="badge-row">
+              <div class="badge-pill insufficient">insufficient_data</div>
+              <div class="badge-desc">라이브 샘플 부족 (n&lt;20). 아직 측정 불가. 기다려.</div>
+            </div>
+            <div class="badge-row">
+              <div class="badge-pill ok">ok</div>
+              <div class="badge-desc">정상. 모델이 기대대로 동작 중.</div>
+            </div>
+            <div class="badge-row">
+              <div class="badge-pill warn">warn</div>
+              <div class="badge-desc">1회 단발 드리프트. 경계하되 아직 급한 조치 불필요.</div>
+            </div>
+            <div class="badge-row">
+              <div class="badge-pill critical">critical</div>
+              <div class="badge-desc">연속 3회 이상 기준치 초과. <strong>이 호라이즌 예측 신뢰도 낮춰서 봐.</strong></div>
+            </div>
+          </div>
+
+          <div class="callout tip">
+            <div class="callout-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.74V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.26A7 7 0 0 0 12 2z"/></svg>
+            </div>
+            <div class="callout-body">
+              <div class="callout-title">critical 이 뜨면 어떻게?</div>
+              <div class="callout-text">
+                (1) 해당 호라이즌 진입 보류 or 사이즈 축소<br/>
+                (2) 며칠 관찰 후 자연 회복되는지 확인<br/>
+                (3) 지속되면 재학습 실험 (<code>experiments/</code> 폴더의 proposals.json + runner.py)<br/>
+                네가 지금 사용 중인 <strong>v1.2.0</strong> 은 그 과정을 이미 한 번 거친 결과물이야.
+              </div>
+            </div>
+          </div>
+
+          <h3>5.4 시장 온도계 (외부 시그널)</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>지표</th><th>해석 기준</th></tr></thead>
+              <tbody>
+                <tr><td>공포탐욕지수</td><td>0~100. <strong>0~25 극단공포</strong>(역발상 매수 고려) / 25~50 공포 / 50~75 탐욕 / <strong>75~100 극단탐욕</strong>(조정 가능성).</td></tr>
+                <tr><td>펀딩비</td><td>8시간마다 결제되는 롱·숏 균형 지표. <strong>+0.03% 이상: 롱 과밀 → 조정 위험</strong>. 음수: 숏 과밀 → 숏스퀴즈 가능.</td></tr>
+                <tr><td>미결제약정 (OI)</td><td>총 열린 포지션 수. <strong>급증 + 가격 상승</strong>: 추세 확립. <strong>급증 + 가격 횡보</strong>: 방향 불안정, 변동성 폭발 대기.</td></tr>
+                <tr><td>롱숏비율</td><td>1.5+ 는 롱 과밀, 0.7- 는 숏 과밀. 극단치는 반대 방향 청산을 유발하기도.</td></tr>
+                <tr><td>BTC 도미넌스</td><td>상승 시 알트 약세 / 하락 시 알트 시즌 신호 (ETH/SOL 매매에 특히 중요).</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ========== CHAPTER 6 ========== -->
+        <section class="chapter" id="ch6">
+          <div class="chapter-header">
+            <div class="chapter-eyebrow">Chapter 06</div>
+            <h2>시스템 건강 체크</h2>
+            <p class="chapter-lead">
+              이 도구는 자동으로 돌아가지만 <strong>방치하면 안 돼</strong>. 아래 주기에 맞춰 최소한의 점검을 해주면 오래 건강하게 쓸 수 있어.
+            </p>
+          </div>
+
+          <h3>6.1 매일 — 30초</h3>
+          <ul>
+            <li>브라우저 열어서 <strong>as_of 가 20분 이내</strong> 인지 확인 (자동 실행 살아있는지).</li>
+            <li>재학습 권장 배지가 <strong>critical 로 바뀌지 않았는지</strong>.</li>
+            <li>predictions 파일 심볼별로 전부 최신인지 (BTC/ETH/SOL).</li>
+          </ul>
+
+          <h3>6.2 매주 — 5분</h3>
+          <ul>
+            <li><code>predictor/automation/status.command</code> 더블클릭 → 실행 로그 10줄 훑기.</li>
+            <li><code>logs/run_auto.log</code> 파일 크기 확인. 5MB 넘으면 자동 로테이션되지만 수동으로 지워도 됨.</li>
+            <li>드리프트 히스토리 차트(UI) 한 번 열어서 추세 확인 — 악화 중인지 안정 중인지.</li>
+            <li>주간 거래 일지 작성 — 내 진입이 예측 신뢰도 대로 작동했는지 돌아봄.</li>
+          </ul>
+
+          <h3>6.3 매월 — 15분</h3>
+          <ul>
+            <li><strong><code>logs/</code> 폴더 크기 체크</strong>. 수백 MB 되면 오래된 월별 로그 정리.</li>
+            <li>requirements.txt 에 업데이트 있는지 체크 (보안 패치 목적). 없으면 업데이트 불필요.</li>
+            <li>Binance API 응답이 여전히 정상인지 (Binance 가 API 스펙 바꾸면 코드 수정 필요).</li>
+            <li>내 거래 성적 vs 예측 동의율 비교. 예측대로 안 하는 경우가 많으면 시스템 의심 전에 <strong>내 훈육</strong> 을 먼저.</li>
+          </ul>
+
+          <h3>6.4 위험 신호와 대응</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>증상</th><th>대응</th></tr></thead>
+              <tbody>
+                <tr><td>as_of 가 1시간 이상 멈춤</td><td>Mac 이 잠들었거나 launchd 중지됨. status.command → 재시작.</td></tr>
+                <tr><td>launchd_stderr.log 반복 에러</td><td>Binance API 타임아웃 · venv 깨짐 가능. 수동 run_mac.command 먼저 성공하는지 확인.</td></tr>
+                <tr><td>15m 드리프트 critical 2주 지속</td><td>시장이 근본적으로 바뀌었을 수 있음. experiments/ 로 재학습 실험 착수.</td></tr>
+                <tr><td>히트율이 50% 아래 한 달 지속</td><td>모델이 시장을 따라가지 못함. <strong>실전 사용 중단 권장</strong>, 재학습 후 재검증.</td></tr>
+                <tr><td>예측 방향이 5분마다 뒤집힘</td><td>피처 계산 버그 또는 데이터 이상. 개발자(=나/AI) 호출 필요.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ========== CHAPTER 7 ========== -->
+        <section class="chapter" id="ch7">
+          <div class="chapter-header">
+            <div class="chapter-eyebrow">Chapter 07</div>
+            <h2>자주 하는 실수와 교훈</h2>
+            <p class="chapter-lead">초보 투자자가 이 도구를 쓰며 가장 흔히 저지르는 실수들. 먼저 알고 들어가면 피할 수 있어.</p>
+          </div>
+
+          <div class="mistake">
+            <div class="mistake-title">"확률 63% 니까 무조건 들어간다"</div>
+            <div class="mistake-body">63% 는 37% 확률로 틀리는 것. <strong>손절 없이 진입하면 37% 가 계좌의 100% 손실</strong> 로 번역됨. 확률은 진입 여부가 아니라 포지션 사이즈·손익비 계산에 쓰는 재료.</div>
+          </div>
+          <div class="mistake">
+            <div class="mistake-title">1회 틀렸다고 모델 버림</div>
+            <div class="mistake-body">예측기는 "1번 중 1번 맞추는 것" 이 아니라 "100번 중 52번 맞추는 것". 최소 30~50회 이상 샘플에서 히트율 평가해야 의미 있음.</div>
+          </div>
+          <div class="mistake">
+            <div class="mistake-title">4h 예측 하나만 보고 스캘핑</div>
+            <div class="mistake-body">호라이즌과 매매 시간이 안 맞음. 스캘핑은 15m, 포지션 트레이딩은 4h 가 주 신호. 자기 스타일에 맞는 호라이즌 하나를 주력으로 정해.</div>
+          </div>
+          <div class="mistake">
+            <div class="mistake-title">백테스트 수익률 300% 전략 바로 실전</div>
+            <div class="mistake-body">MDD 60% 인 걸 몰라서 5% 손실에 손절, 실전 손익은 -50%. <strong>MDD · 거래 횟수 · 샤프를 먼저 보기.</strong></div>
+          </div>
+          <div class="mistake">
+            <div class="mistake-title">드리프트 critical 뜬 상태로 계속 거래</div>
+            <div class="mistake-body">모델이 "나 지금 틀리고 있어요" 라고 경고하는 상태. <strong>사이즈 축소 또는 해당 호라이즌 일시 배제</strong> 가 정석.</div>
+          </div>
+          <div class="mistake">
+            <div class="mistake-title">자동화 설치하고 Mac 잠자기 설정</div>
+            <div class="mistake-body">launchd 는 잠자는 Mac 을 못 깨움. 예측 멈춘 채 UI 만 옛 데이터 표시. 전원 어댑터 연결 시 "잠들지 않기" 설정 필수.</div>
+          </div>
+          <div class="mistake">
+            <div class="mistake-title">공포탐욕/펀딩비 극단값을 역방향 신호로 맹신</div>
+            <div class="mistake-body">극단값이 더 극단으로 가는 경우도 많음. <strong>가격 행동과 함께</strong> 봐야 함. (예: 공포탐욕 15 + 지지선 지켜짐 = 반등 신호, 공포탐욕 15 + 지지선 붕괴 = 추가 하락)</div>
+          </div>
+        </section>
+
+        <!-- ========== CHAPTER 8 ========== -->
+        <section class="chapter" id="ch8">
+          <div class="chapter-header">
+            <div class="chapter-eyebrow">Chapter 08</div>
+            <h2>용어 사전 (가나다순)</h2>
+            <p class="chapter-lead">도구를 쓰며 마주칠 핵심 용어 모음. 처음 보는 단어는 여기서 빠르게 찾아봐.</p>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>용어</th><th>뜻</th></tr></thead>
+              <tbody>
+                <tr><td>공포탐욕지수</td><td>Fear &amp; Greed Index. 0~100 의 시장 심리 지표. 극단값은 역방향 신호로 자주 쓰임.</td></tr>
+                <tr><td>드리프트</td><td>Drift. 라이브 히트율 - 백테스트 히트율. 음수가 커지면 모델 노후화 의심.</td></tr>
+                <tr><td>레짐</td><td>Regime. 시장 상태 분류 (trend_up/down, range, high_vol). 모델이 자동 감지.</td></tr>
+                <tr><td>롱숏비율</td><td>Long/Short Ratio. 열린 롱 포지션 / 숏 포지션 수. 극단치는 반대 청산 유발.</td></tr>
+                <tr><td>미결제약정</td><td>Open Interest(OI). 현재 시장에 열려있는 전체 선물 포지션 수량.</td></tr>
+                <tr><td>백테스트</td><td>Backtest. 과거 데이터로 전략의 수익률을 시뮬레이션.</td></tr>
+                <tr><td>샤프 비율</td><td>Sharpe Ratio. (평균 수익 - 무위험 수익) / 수익의 표준편차. 1 이상이면 양호.</td></tr>
+                <tr><td>손절 (SL)</td><td>Stop Loss. 손실 한도에 도달하면 자동 청산하는 주문.</td></tr>
+                <tr><td>순이익 비율</td><td>Expectancy. 평균 승리 × 승률 - 평균 손실 × 패율. 양수여야 살아남음.</td></tr>
+                <tr><td>익절 (TP)</td><td>Take Profit. 목표 수익에 도달하면 자동 청산하는 주문.</td></tr>
+                <tr><td>챔피언 모델</td><td>현재 프로덕션에 쓰이는 모델 버전. 현 v1.2.0 (2026-04-19 승격).</td></tr>
+                <tr><td>켈리 공식</td><td>Kelly Criterion. 확률·손익비로 최적 베팅 사이즈 계산. 실전은 1/4 켈리 권장.</td></tr>
+                <tr><td>펀딩비</td><td>Funding Rate. 8시간마다 영구선물 롱·숏 간 결제되는 수수료. 방향 과밀 지표.</td></tr>
+                <tr><td>호라이즌</td><td>Horizon. 예측 대상 시간 (15m / 1h / 4h).</td></tr>
+                <tr><td>히트율</td><td>Hit Rate. 예측이 실제 방향과 맞은 비율.</td></tr>
+                <tr><td>WFV</td><td>Walk-Forward Validation. 시계열 데이터에 맞는 백테스트 방식. 미래 정보 누출 방지.</td></tr>
+                <tr><td>XGBoost</td><td>그라디언트 부스팅 트리 기반 머신러닝 알고리즘. 이 도구의 예측 엔진.</td></tr>
+                <tr><td>MDD</td><td>Maximum Drawdown. 전략의 최대 누적 손실폭. 실전 견딜 수 있는지 판단 기준.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ========== CHAPTER 9 ========== -->
+        <section class="chapter" id="ch9">
+          <div class="chapter-header">
+            <div class="chapter-eyebrow">Chapter 09</div>
+            <h2>빠른 참조 카드 (인쇄용)</h2>
+            <p class="chapter-lead">이 섹션만 뽑아서 책상 옆에 두고 보면 됨. 핵심만 압축.</p>
+          </div>
+
+          <h3>진입 체크리스트</h3>
+          <div class="checklist">
+            <div class="checklist-item"><div class="checklist-box"></div><div>15m · 1h · 4h 방향 최소 2개 일치</div></div>
+            <div class="checklist-item"><div class="checklist-box"></div><div>prob_up ≥ 0.58 또는 ≤ 0.42</div></div>
+            <div class="checklist-item"><div class="checklist-box"></div><div>레짐이 내 스타일과 맞음 (추세 vs 평균회귀)</div></div>
+            <div class="checklist-item"><div class="checklist-box"></div><div>외부 시그널(공포탐욕/펀딩비) 이 반대 방향 아님</div></div>
+            <div class="checklist-item"><div class="checklist-box"></div><div>SL 가격 · 포지션 사이즈 결정 완료</div></div>
+            <div class="checklist-item"><div class="checklist-box"></div><div>드리프트 critical 아님</div></div>
+          </div>
+
+          <h3>핵심 임계값</h3>
+          <div class="table-wrap">
+            <table>
+              <tbody>
+                <tr><td><code>prob_up</code></td><td>0.55 = 최소 기준 / 0.60 = 강한 신호 / 0.65+ = 매우 강함</td></tr>
+                <tr><td><code>accuracy_std</code></td><td>0.02- 안정 / 0.02~0.05 보통 / 0.05+ 경계</td></tr>
+                <tr><td><code>drift_pp</code></td><td>0~-3 정상 / -3~-5 경계 / -5~ 주의 / -7 3회 연속 → 재학습</td></tr>
+                <tr><td>공포탐욕</td><td>0~25 극단공포 / 75~100 극단탐욕 (역방향 신호)</td></tr>
+                <tr><td>펀딩비</td><td>+0.03% 이상: 롱 과밀 / 음수: 숏 과밀</td></tr>
+                <tr><td>Kelly</td><td>제시값 × 0.25 (= 1/4 켈리) 권장</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>매일 · 매주 · 매월</h3>
+          <div class="table-wrap">
+            <table>
+              <tbody>
+                <tr><td>매일</td><td>as_of 시각 확인 / 3개 호라이즌 방향 / 레짐 / 재학습 배지 / 공포탐욕·펀딩비</td></tr>
+                <tr><td>매주</td><td>status.command 로그 확인 / 드리프트 히스토리 / 거래 일지 작성</td></tr>
+                <tr><td>매월</td><td>logs 폴더 크기 / requirements.txt 업데이트 / 내 거래 성적 vs 예측 동의율</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>긴급 상황</h3>
+          <div class="table-wrap">
+            <table>
+              <tbody>
+                <tr><td>예측이 오래된 것 같다</td><td>status.command → 등록 여부 확인 → launchctl start</td></tr>
+                <tr><td>재학습 배지가 critical</td><td>해당 호라이즌 사이즈 축소 / 며칠 관찰</td></tr>
+                <tr><td>드리프트 2주째 critical</td><td>experiments/ 로 재학습 실험 착수</td></tr>
+                <tr><td>전체 시스템 수상</td><td><code>predictor.py.backup_v1.1.0</code> 로 모델 롤백 가능</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="final-card">
+            <h3>마지막 기억할 것</h3>
+            <p>
+              이 도구는 <strong>판단의 보조</strong> 야. 최종 결정과 책임은 너.<br/>
+              <strong>확률은 참고</strong>, <strong>손절은 필수</strong>, <strong>포지션 사이즈는 방어</strong>, <strong>기록은 복기</strong>.<br/>
+              이 네 가지가 도구보다 더 중요해.
+            </p>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // === Menu ===
+    function toggleMenu() {
+      var dropdown = document.getElementById('vizMenuDropdown');
+      if (dropdown) dropdown.classList.toggle('open');
+    }
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.viz-menu')) {
+        var dropdown = document.getElementById('vizMenuDropdown');
+        if (dropdown) dropdown.classList.remove('open');
+      }
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        var dropdown = document.getElementById('vizMenuDropdown');
+        if (dropdown) dropdown.classList.remove('open');
+      }
+    });
+
+    // === Theme (class-based, light default) ===
+    var savedTheme = localStorage.getItem('guide-theme');
+    var currentTheme = savedTheme || 'light';
+    function applyTheme(t) {
+      document.documentElement.className = 'theme-' + t;
+      var icon = document.getElementById('themeIcon');
+      var label = document.getElementById('themeLabel');
+      if (icon) icon.textContent = t === 'dark' ? '🌙' : '☀️';
+      if (label) label.textContent = t === 'dark' ? 'Dark' : 'Light';
+      localStorage.setItem('guide-theme', t);
+      currentTheme = t;
+    }
+    function cycleTheme() { applyTheme(currentTheme === 'dark' ? 'light' : 'dark'); }
+    applyTheme(currentTheme);
+
+    // === TOC active state ===
+    var tocLinks = document.querySelectorAll('.toc-link');
+    var chapters = document.querySelectorAll('.chapter');
+    var tocObserver = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          var id = entry.target.id;
+          tocLinks.forEach(function(l) {
+            l.classList.toggle('active', l.getAttribute('href') === '#' + id);
+          });
+        }
+      });
+    }, { rootMargin: '-30% 0px -65% 0px' });
+    chapters.forEach(function(c) { tocObserver.observe(c); });
+
+    // === Smooth scroll for TOC ===
+    tocLinks.forEach(function(link) {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        var target = document.querySelector(this.getAttribute('href'));
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+
+    // === Scroll reveal ===
+    document.querySelectorAll('[data-reveal]').forEach(function(el) { el.classList.add('reveal'); });
+    var revealObserver = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if (e.isIntersecting) { e.target.classList.add('visible'); revealObserver.unobserve(e.target); }
+      });
+    }, { threshold: 0.15 });
+    document.querySelectorAll('.reveal').forEach(function(el) { revealObserver.observe(el); });
+
+    // === Download PNG ===
+    async function downloadImage() {
+      var menu = document.querySelector('.viz-menu');
+      menu.style.display = 'none';
+      try {
+        var url = await htmlToImage.toPng(document.body, {
+          quality: 1, pixelRatio: 2,
+          filter: function(n) { return !n.classList || !n.classList.contains('viz-menu'); }
+        });
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = '암호화폐-차트분석-가이드.png';
+        a.click();
+      } catch(e) { console.error('Download failed:', e); }
+      menu.style.display = '';
+    }
+  </script>
+</body>
+</html>
