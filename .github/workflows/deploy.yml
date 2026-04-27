@@ -1,8 +1,4 @@
 # GitHub Pages 자동 배포 + StatiCrypt 비밀번호 보호
-# main 브랜치에 push 할 때마다:
-#   1) HTML 을 STATICRYPT_PASSWORD 로 AES-256 암호화
-#   2) GitHub Pages 에 배포
-# 비밀번호는 GitHub repo Settings → Secrets and variables → Actions 에서 STATICRYPT_PASSWORD 로 등록
 name: Deploy to GitHub Pages (encrypted)
 
 on:
@@ -35,23 +31,34 @@ jobs:
           node-version: '20'
 
       - name: Install StatiCrypt
-        run: npm install -g staticrypt
+        run: npm install -g staticrypt@3.5.0
+
+      - name: Verify StatiCrypt
+        run: staticrypt --help | head -5
 
       - name: Encrypt main page
         env:
           STATICRYPT_PASSWORD: ${{ secrets.STATICRYPT_PASSWORD }}
         run: |
           if [ -z "$STATICRYPT_PASSWORD" ]; then
-            echo "❌ STATICRYPT_PASSWORD secret 이 설정되지 않았습니다."
-            echo "→ repo Settings → Secrets and variables → Actions → New secret 으로 추가하세요."
+            echo "❌ STATICRYPT_PASSWORD secret 미설정 — repo Settings → Secrets → Actions 에서 추가하세요."
             exit 1
           fi
-          # 암호화 + index.html 로 출력 → 진입 시 비번 프롬프트
-          staticrypt crypto-analyzer.html -p "$STATICRYPT_PASSWORD" --short -o build
-          mv build/crypto-analyzer.html index.html
-          # 사용 매뉴얼 등 다른 페이지도 암호화하려면 아래 주석 해제
-          # staticrypt 사용_매뉴얼.html -p "$STATICRYPT_PASSWORD" --short -o build
-          # mv build/사용_매뉴얼.html ./사용_매뉴얼.html
+          # v3.x 호환: -d 로 디렉토리 지정 (--short 제거)
+          staticrypt crypto-analyzer.html -p "$STATICRYPT_PASSWORD" -d build
+          echo "--- build 폴더 내용 ---"
+          ls -la build/ || true
+          # 출력된 암호화 파일을 index.html 로 복사 (루트 진입 시 비번 입력)
+          if [ -f build/crypto-analyzer.html ]; then
+            cp build/crypto-analyzer.html index.html
+            echo "✅ index.html 생성 완료"
+          else
+            echo "❌ build/crypto-analyzer.html 없음. staticrypt 출력 파일 검색:"
+            find build -type f 2>/dev/null || echo "build 폴더 없음"
+            exit 1
+          fi
+          # 정리: build 폴더는 배포 artifact 에 포함시키지 않음
+          rm -rf build
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
