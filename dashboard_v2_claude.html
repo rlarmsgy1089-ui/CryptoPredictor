@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Crypto Analyzer — 통합 대시보드 (Claude Dark)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+4:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ==========================================================================
+   Claude Dark — Design Tokens v1
+   warm-toned dark theme inspired by Anthropic Claude artifact aesthetic
+   ========================================================================== */
+:root {
+  /* ── Surface (warm dark) ── */
+  --bg-page:        #1a1714;   /* page background — warm near-black */
+  --bg-surface:     #221d18;   /* card */
+  --bg-elevated:    #2a241e;   /* elevated card */
+  --bg-overlay:     #332b23;   /* hover / active */
+  --bg-inset:       #15120f;   /* deep inset (charts, code) */
+
+  /* ── Borders ── */
+  --border-soft:    #2e2620;
+  --border-default: #3a3026;
+  --border-strong:  #4a3e30;
+
+  /* ── Text ── */
+  --text-primary:   #f5efe6;   /* warm cream — primary */
+  --text-secondary: #c9c0b3;   /* muted cream */
+  --text-tertiary:  #8a8175;   /* metadata */
+  --text-disabled:  #5c544a;
+
+  /* ── Claude accents (warm coral/orange) ── */
+  --accent:         #d97757;   /* Claude coral — primary accent */
+  --accent-hover:   #e08f74;
+  --accent-soft:    rgba(217,119,87,0.12);
+  --accent-border:  rgba(217,119,87,0.35);
+
+  /* ── Semantic (warm-tuned, not neon) ── */
+  --success:        #7fa37a;   /* sage — bull / pass */
+  --success-soft:   rgba(127,163,122,0.14);
+  --warning:        #d4a657;   /* amber — caution */
+  --warning-soft:   rgba(212,166,87,0.14);
+  --danger:         #c8675a;   /* terracotta — bear / fail */
+  --danger-soft:    rgba(200,103,90,0.14);
+  --info:           #7a9bbf;   /* dusty blue — info */
+  --info-soft:      rgba(122,155,191,0.14);
+
+  /* ── Type scale ── */
+  --fs-2xs: 10px;
+  --fs-xs:  11px;
+  --fs-sm:  12px;
+  --fs-base:13px;
+  --fs-md:  14px;
+  --fs-lg:  16px;
+  --fs-xl:  20px;
+  --fs-2xl: 26px;
+  --fs-3xl: 34px;
+
+  /* ── Weight ── */
+  --fw-regular:  400;
+  --fw-medium:   500;
+  --fw-semibold: 600;
+  --fw-bold:     700;
+
+  /* ── Spacing ── */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-7: 32px;
+  --sp-8: 40px;
+
+  /* ── Radius ── */
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --r-xl: 18px;
+
+  /* ── Shadow ── */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.25);
+  --shadow-md: 0 4px 14px rgba(0,0,0,0.35), 0 1px 2px rgba(0,0,0,0.2);
+  --shadow-lg: 0 12px 32px rgba(0,0,0,0.45), 0 2px 6px rgba(0,0,0,0.3);
+  --shadow-glow: 0 0 0 1px rgba(217,119,87,0.18), 0 8px 24px rgba(217,119,87,0.08);
+
+  /* ── Transition ── */
+  --t-fast: 120ms cubic-bezier(.4,0,.2,1);
+  --t-base: 200ms cubic-bezier(.4,0,.2,1);
+  --t-slow: 320ms cubic-bezier(.4,0,.2,1);
+
+  /* ── Font families ── */
+  --font-sans:  'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-serif: 'Source Serif 4', Georgia, serif;
+  --font-mono:  'JetBrains Mono', ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+/* ==========================================================================
+   Reset + base
+   ========================================================================== */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 14px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+body {
+  font-family: var(--font-sans);
+  font-size: var(--fs-base);
+  font-weight: var(--fw-regular);
+  line-height: 1.55;
+  color: var(--text-primary);
+  background: var(--bg-page);
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(217,119,87,0.06), transparent 60%),
+    radial-gradient(ellipse 60% 40% at 90% 10%, rgba(122,155,191,0.04), transparent 60%);
+  min-height: 100vh;
+}
+button { font-family: inherit; cursor: pointer; border: 0; background: none; color: inherit; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-hover); }
+
+/* ==========================================================================
+   Layout shell
+   ========================================================================== */
+.shell {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  min-height: 100vh;
+}
+
+/* ── Side rail ── */
+.rail {
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border-soft);
+  padding: var(--sp-5) var(--sp-3);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+.rail-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  margin-bottom: var(--sp-6);
+}
+.rail-brand-mark {
+  width: 32px; height: 32px;
+  border-radius: var(--r-md);
+  background: linear-gradient(135deg, var(--accent), #c45a3e);
+  display: grid; place-items: center;
+  color: #fff;
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-md);
+  box-shadow: 0 4px 12px rgba(217,119,87,0.25);
+}
+.rail-brand-name {
+  font-family: var(--font-serif);
+  font-weight: var(--fw-semibold);
+  font-size: var(--fs-lg);
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+.rail-brand-sub {
+  font-size: var(--fs-2xs);
+  color: var(--text-tertiary);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.rail-section-label {
+  font-size: var(--fs-2xs);
+  font-weight: var(--fw-semibold);
+  color: var(--text-tertiary);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: var(--sp-2) var(--sp-3);
+  margin-top: var(--sp-4);
+}
+.rail-tab {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  padding: 9px var(--sp-3);
+  border-radius: var(--r-sm);
+  font-size: var(--fs-base);
+  font-weight: var(--fw-medium);
+  color: var(--text-secondary);
+  text-align: left;
+  transition: background var(--t-fast), color var(--t-fast);
+}
+.rail-tab:hover { background: var(--bg-overlay); color: var(--text-primary); }
+.rail-tab.is-active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: var(--fw-semibold);
+}
+.rail-tab.is-active::before {
+  content: ''; width: 3px; height: 18px;
+  background: var(--accent);
+  border-radius: 2px;
+  margin-left: -11px; margin-right: 8px;
+}
+.rail-tab .tab-icon { font-size: var(--fs-md); width: 20px; text-align: center; }
+.rail-tab .tab-num {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--text-tertiary);
+  background: var(--bg-inset);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* ── Main content ── */
+.main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* ── Topbar ── */
+.topbar {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: 0 var(--sp-6);
+  border-bottom: 1px solid var(--border-soft);
+  background: rgba(34,29,24,0.7);
+  backdrop-filter: blur(12px);
+  position: sticky; top: 0; z-index: 10;
+}
+.topbar h1 {
+  font-family: var(--font-serif);
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-semibold);
+  letter-spacing: -0.01em;
+}
+.topbar .tagline {
+  font-size: var(--fs-sm);
+  color: var(--text-tertiary);
+  margin-left: var(--sp-2);
+}
+.topbar .spacer { flex: 1; }
+
+/* Symbol pill group */
+.sym-group {
+  display: inline-flex;
+  background: var(--bg-inset);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-md);
+  padding: 3px;
+}
+.sym-pill {
+  padding: 6px 14px;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  border-radius: 7px;
+  transition: all var(--t-fast);
+}
+.sym-pill:hover { color: var(--text-primary); }
+.sym-pill.is-active {
+  background: var(--bg-elevated);
+  color: var(--accent);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; gap: var(--sp-2);
+  padding: 8px 14px;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  border-radius: var(--r-sm);
+  transition: all var(--t-fast);
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.06) inset, var(--shadow-sm);
+}
+.btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border-color: var(--border-default);
+}
+.btn-ghost:hover { background: var(--bg-overlay); color: var(--text-primary); }
+
+/* Top tabs (종합/시세/뉴스&소셜) */
+.top-tabs {
+  display: flex;
+  gap: var(--sp-1);
+  padding: 0 var(--sp-6);
+  border-bottom: 1px solid var(--border-soft);
+  background: var(--bg-page);
+}
+.top-tab {
+  padding: 12px var(--sp-4);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--text-tertiary);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: all var(--t-fast);
+}
+.top-tab:hover { color: var(--text-secondary); }
+.top-tab.is-active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* Content area */
+.content {
+  padding: var(--sp-6);
+  display: grid;
+  gap: var(--sp-5);
+}
+
+/* ==========================================================================
+   Cards
+   ========================================================================== */
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-lg);
+  padding: var(--sp-5);
+  transition: border-color var(--t-base);
+}
+.card-em {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: var(--r-lg);
+  padding: var(--sp-5);
+  box-shadow: var(--shadow-md);
+}
+.card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-4);
+}
+.card-title {
+  font-family: var(--font-serif);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semibold);
+  color: var(--text-primary);
+  letter-spacing: -0.005em;
+}
+.card-eyebrow {
+  font-size: var(--fs-2xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin-bottom: 4px;
+  display: block;
+}
+.card-meta {
+  font-size: var(--fs-xs);
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+}
+
+/* ==========================================================================
+   Hero — Risk Regime
+   ========================================================================== */
+.regime {
+  background:
+    radial-gradient(ellipse 60% 100% at 0% 0%, rgba(217,119,87,0.10), transparent 60%),
+    linear-gradient(135deg, var(--bg-elevated), var(--bg-surface));
+  border: 1px solid var(--border-default);
+  border-radius: var(--r-xl);
+  padding: var(--sp-6);
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 1fr;
+  gap: var(--sp-5);
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+.regime::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: 0.45;
+}
+.regime-main { display: flex; align-items: center; gap: var(--sp-4); }
+.regime-pulse {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 0 4px var(--success-soft), 0 0 20px var(--success);
+  animation: pulse 2.4s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%      { transform: scale(1.15); opacity: 0.7; }
+}
+.regime-eyebrow {
+  font-size: var(--fs-2xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+.regime-title {
+  font-family: var(--font-serif);
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-bold);
+  letter-spacing: -0.02em;
+  margin-top: 2px;
+  color: var(--text-primary);
+}
+.regime-title .accent { color: var(--success); }
+.regime-sub {
+  font-size: var(--fs-xs);
+  color: var(--text-tertiary);
+  margin-top: 2px;
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  padding-left: var(--sp-5);
+  border-left: 1px solid var(--border-soft);
+}
+.metric-label {
+  font-size: var(--fs-2xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+.metric-row {
+  display: flex; align-items: baseline; gap: var(--sp-2);
+  margin-top: 4px;
+}
+.metric-value {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-bold);
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+.metric-delta {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+}
+.up   { color: var(--success); }
+.down { color: var(--danger);  }
+.flat { color: var(--text-tertiary); }
+
+/* ==========================================================================
+   Stat row — small KPI tiles
+   ========================================================================== */
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: var(--sp-3);
+}
+.stat {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-md);
+  padding: var(--sp-3) var(--sp-4);
+  display: flex; flex-direction: column; gap: 2px;
+  transition: all var(--t-fast);
+}
+.stat:hover { border-color: var(--border-default); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.stat-label {
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  font-weight: var(--fw-semibold);
+}
+.stat-value {
+  font-family: var(--font-mono);
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-bold);
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+.stat-delta {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+}
+
+/* ==========================================================================
+   Grid layouts
+   ========================================================================== */
+.grid-2 {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--sp-5);
+}
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-5);
+}
+.grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--sp-3);
+}
+
+/* Status summary verdict block */
+.verdict {
+  background: linear-gradient(135deg, var(--accent-soft), transparent 60%);
+  border: 1px solid var(--accent-border);
+  border-radius: var(--r-lg);
+  padding: var(--sp-5);
+}
+.verdict-eyebrow {
+  font-size: var(--fs-2xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.verdict-title {
+  font-family: var(--font-serif);
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-bold);
+  letter-spacing: -0.02em;
+  margin-top: 4px;
+}
+.verdict-body {
+  margin-top: var(--sp-3);
+  color: var(--text-secondary);
+  font-size: var(--fs-base);
+  line-height: 1.65;
+}
+.verdict-tags {
+  display: flex; flex-wrap: wrap; gap: var(--sp-2);
+  margin-top: var(--sp-4);
+}
+.tag {
+  font-size: var(--fs-2xs);
+  font-weight: var(--fw-semibold);
+  padding: 4px 10px;
+  border-radius: 99px;
+  background: var(--bg-overlay);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-soft);
+  letter-spacing: 0.04em;
+}
+.tag.tag-up   { color: var(--success); border-color: rgba(127,163,122,0.3); background: var(--success-soft); }
+.tag.tag-down { color: var(--danger);  border-color: rgba(200,103,90,0.3);  background: var(--danger-soft); }
+.tag.tag-warn { color: var(--warning); border-color: rgba(212,166,87,0.3);  background: var(--warning-soft); }
+
+/* ==========================================================================
+   Mini chart placeholder (SVG sparkline area)
+   ========================================================================== */
+.spark {
+  width: 100%; height: 56px;
+  margin-top: var(--sp-3);
+  display: block;
+}
+
+/* ==========================================================================
+   News / list rows
+   ========================================================================== */
+.news-list { display: flex; flex-direction: column; }
+.news-row {
+  display: flex;
+  gap: var(--sp-3);
+  padding: var(--sp-3) 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+.news-row:last-child { border-bottom: 0; }
+.news-time {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+  width: 56px;
+}
+.news-body { flex: 1; min-width: 0; }
+.news-title {
+  font-size: var(--fs-base);
+  font-weight: var(--fw-medium);
+  color: var(--text-primary);
+  line-height: 1.45;
+}
+.news-meta {
+  font-size: var(--fs-xs);
+  color: var(--text-tertiary);
+  margin-top: 2px;
+}
+.news-impact {
+  font-size: var(--fs-2xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.06em;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--bg-overlay);
+  color: var(--text-secondary);
+  flex-shrink: 0;
+  height: fit-content;
+}
+.news-impact.high { color: var(--danger); background: var(--danger-soft); }
+.news-impact.med  { color: var(--warning); background: var(--warning-soft); }
+
+/* ==========================================================================
+   Indicator table (RSI/MACD style)
+   ========================================================================== */
+.ind-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--sp-2) var(--sp-5);
+}
+.ind-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-soft);
+  font-size: var(--fs-sm);
+}
+.ind-name { color: var(--text-secondary); font-weight: var(--fw-medium); }
+.ind-val  { font-family: var(--font-mono); font-weight: var(--fw-semibold); color: var(--text-primary); }
+.ind-sig {
+  font-size: var(--fs-2xs);
+  font-weight: var(--fw-bold);
+  letter-spacing: 0.06em;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+.ind-sig.buy   { color: var(--success); background: var(--success-soft); }
+.ind-sig.sell  { color: var(--danger);  background: var(--danger-soft);  }
+.ind-sig.hold  { color: var(--text-tertiary); background: var(--bg-overlay); }
+
+/* ==========================================================================
+   Predictions card
+   ========================================================================== */
+.pred-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--sp-3);
+}
+.pred {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: var(--r-md);
+  padding: var(--sp-4);
+}
+.pred-head {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: var(--sp-2);
+}
+.pred-tf {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  font-weight: var(--fw-bold);
+  letter-spacing: 0.08em;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+}
+.pred-dir {
+  font-size: var(--fs-2xs);
+  font-weight: var(--fw-bold);
+  padding: 3px 9px;
+  border-radius: 99px;
+}
+.pred-dir.long  { color: var(--success); background: var(--success-soft); }
+.pred-dir.short { color: var(--danger);  background: var(--danger-soft); }
+
+.pred-target {
+  font-family: var(--font-mono);
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-bold);
+  color: var(--text-primary);
+}
+.pred-confidence {
+  margin-top: var(--sp-3);
+  display: flex; align-items: center; gap: var(--sp-2);
+  font-size: var(--fs-xs);
+  color: var(--text-tertiary);
+}
+.confidence-bar {
+  flex: 1;
+  height: 4px;
+  background: var(--bg-inset);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.confidence-bar > span {
+  display: block; height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-hover));
+  border-radius: 99px;
+}
+
+/* ==========================================================================
+   Footer
+   ========================================================================== */
+.foot {
+  padding: var(--sp-5) var(--sp-6);
+  border-top: 1px solid var(--border-soft);
+  font-size: var(--fs-xs);
+  color: var(--text-tertiary);
+  display: flex; justify-content: space-between; align-items: center;
+}
+
+/* ==========================================================================
+   Responsive (basic)
+   ========================================================================== */
+@media (max-width: 1100px) {
+  .shell { grid-template-columns: 1fr; }
+  .rail { position: relative; height: auto; }
+  .regime { grid-template-columns: 1fr 1fr; }
+  .stat-row { grid-template-columns: repeat(3, 1fr); }
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <!-- ╔══════════════════════════════════════════════════
+       SIDE RAIL
+       ══════════════════════════════════════════════════╗ -->
+  <aside class="rail">
+    <div class="rail-brand">
+      <div class="rail-brand-mark">⌘</div>
+      <div>
+        <div class="rail-brand-name">Crypto Analyzer</div>
+        <div class="rail-brand-sub">Pro · v2.0</div>
+      </div>
+    </div>
+
+    <div class="rail-section-label">Workspaces</div>
+    <button class="rail-tab is-active">
+      <span class="tab-icon">◆</span>
+      <span>통합</span>
+      <span class="tab-num">⌘0</span>
+    </button>
+
+    <div class="rail-section-label">Analysis Steps</div>
+    <button class="rail-tab"><span class="tab-icon">①</span><span>거시 컨텍스트</span><span class="tab-num">⌘1</span></button>
+    <button class="rail-tab"><span class="tab-icon">②</span><span>구조 분석</span><span class="tab-num">⌘2</span></button>
+    <button class="rail-tab"><span class="tab-icon">③</span><span>멀티 TF 피벗</span><span class="tab-num">⌘3</span></button>
+    <button class="rail-tab"><span class="tab-icon">④</span><span>컨플루언스</span><span class="tab-num">⌘4</span></button>
+    <button class="rail-tab"><span class="tab-icon">⑤</span><span>패턴 감지</span><span class="tab-num">⌘5</span></button>
+    <button class="rail-tab"><span class="tab-icon">⑥</span><span>지표 분석</span><span class="tab-num">⌘6</span></button>
+    <button class="rail-tab"><span class="tab-icon">⑦</span><span>예측 엔진</span><span class="tab-num">⌘7</span></button>
+    <button class="rail-tab"><span class="tab-icon">⑧</span><span>백테스트</span><span class="tab-num">⌘8</span></button>
+    <button class="rail-tab"><span class="tab-icon">⑨</span><span>알람</span><span class="tab-num">⌘9</span></button>
+
+    <div class="rail-section-label">Tools</div>
+    <button class="rail-tab"><span class="tab-icon">⚙</span><span>설정</span></button>
+    <button class="rail-tab"><span class="tab-icon">↗</span><span>리포트 내보내기</span></button>
+  </aside>
+
+  <!-- ╔══════════════════════════════════════════════════
+       MAIN
+       ══════════════════════════════════════════════════╗ -->
+  <main class="main">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <h1>통합 대시보드</h1>
+      <span class="tagline">실시간 거시 → 마이크로 통합 뷰</span>
+      <div class="spacer"></div>
+      <div class="sym-group">
+        <button class="sym-pill is-active">BTCUSDT</button>
+        <button class="sym-pill">ETHUSDT</button>
+        <button class="sym-pill">SOLUSDT</button>
+      </div>
+      <button class="btn btn-ghost">↻ 새로고침</button>
+      <button class="btn btn-primary">⌘ Claude로 복사</button>
+    </header>
+
+    <!-- Top tabs -->
+    <nav class="top-tabs">
+      <button class="top-tab is-active">종합</button>
+      <button class="top-tab">시세</button>
+      <button class="top-tab">뉴스 &amp; 소셜</button>
+    </nav>
+
+    <!-- ══════ Content ══════ -->
+    <div class="content">
+
+      <!-- ── Hero: Market Regime ── -->
+      <section class="regime">
+        <div class="regime-main">
+          <div class="regime-pulse"></div>
+          <div>
+            <div class="regime-eyebrow">Market Regime</div>
+            <div class="regime-title">Risk-<span class="accent">On</span></div>
+            <div class="regime-sub">DXY · S&amp;P500 실시간 추적 · last sync 2s ago</div>
+          </div>
+        </div>
+
+        <div class="metric">
+          <span class="metric-label">DXY</span>
+          <div class="metric-row">
+            <span class="metric-value">98.42</span>
+            <span class="metric-delta down">−0.31%</span>
+          </div>
+        </div>
+        <div class="metric">
+          <span class="metric-label">S&amp;P 500</span>
+          <div class="metric-row">
+            <span class="metric-value">5,847</span>
+            <span class="metric-delta up">+0.74%</span>
+          </div>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Fear &amp; Greed</span>
+          <div class="metric-row">
+            <span class="metric-value">68</span>
+            <span class="metric-delta up">Greed</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── KPI strip ── -->
+      <section class="stat-row">
+        <div class="stat"><span class="stat-label">BTC</span><span class="stat-value">$94,218</span><span class="stat-delta up">+1.84%</span></div>
+        <div class="stat"><span class="stat-label">ETH</span><span class="stat-value">$3,287</span><span class="stat-delta up">+2.12%</span></div>
+        <div class="stat"><span class="stat-label">BTC.D</span><span class="stat-value">58.4%</span><span class="stat-delta down">−0.22pp</span></div>
+        <div class="stat"><span class="stat-label">USDT.D</span><span class="stat-value">4.1%</span><span class="stat-delta down">−0.05pp</span></div>
+        <div class="stat"><span class="stat-label">Kimchi</span><span class="stat-value">+1.8%</span><span class="stat-delta up">+0.4pp</span></div>
+        <div class="stat"><span class="stat-label">Funding</span><span class="stat-value">+0.012%</span><span class="stat-delta flat">neutral</span></div>
+      </section>
+
+      <!-- ── Verdict + Predictions ── -->
+      <section class="grid-2">
+        <div class="verdict">
+          <div class="verdict-eyebrow">통합 판단</div>
+          <div class="verdict-title">매수 우위 · 단기 눌림 대기</div>
+          <p class="verdict-body">
+            거시 환경은 Risk-On (DXY 약세 · 주식 강세) 으로 우호적이며 BTC 도미넌스 소폭 하락은 알트로의 자금 이동 신호.
+            단기적으로 RSI 과열 영역 진입으로 1–2일 눌림 후 진입이 유리.
+            <strong style="color:var(--text-primary)">$92,800 ~ $93,400</strong> 구간에서 첫 분할 매수 권고.
+          </p>
+          <div class="verdict-tags">
+            <span class="tag tag-up">Risk-On</span>
+            <span class="tag tag-up">Momentum +</span>
+            <span class="tag tag-warn">RSI 과열</span>
+            <span class="tag">Funding 중립</span>
+            <span class="tag">컨플루언스 4H</span>
+          </div>
+        </div>
+
+        <div class="card-em">
+          <div class="card-head">
+            <div>
+              <span class="card-eyebrow">Predictions</span>
+              <div class="card-title">멀티 타임프레임 예측</div>
+            </div>
+            <span class="card-meta">model · v2.4</span>
+          </div>
+          <div class="pred-grid">
+            <div class="pred">
+              <div class="pred-head">
+                <span class="pred-tf">1H</span>
+                <span class="pred-dir long">▲ LONG</span>
+              </div>
+              <div class="pred-target">$94,650</div>
+              <div class="pred-confidence">
+                <span>conf</span>
+                <div class="confidence-bar"><span style="width:72%"></span></div>
+                <span>72%</span>
+              </div>
+            </div>
+            <div class="pred">
+              <div class="pred-head">
+                <span class="pred-tf">4H</span>
+                <span class="pred-dir long">▲ LONG</span>
+              </div>
+              <div class="pred-target">$96,200</div>
+              <div class="pred-confidence">
+                <span>conf</span>
+                <div class="confidence-bar"><span style="width:64%"></span></div>
+                <span>64%</span>
+              </div>
+            </div>
+            <div class="pred">
+              <div class="pred-head">
+                <span class="pred-tf">1D</span>
+                <span class="pred-dir long">▲ LONG</span>
+              </div>
+              <div class="pred-target">$98,400</div>
+              <div class="pred-confidence">
+                <span>conf</span>
+                <div class="confidence-bar"><span style="width:58%"></span></div>
+                <span>58%</span>
+              </div>
+            </div>
+            <div class="pred">
+              <div class="pred-head">
+                <span class="pred-tf">1W</span>
+                <span class="pred-dir short">▼ SHORT</span>
+              </div>
+              <div class="pred-target">$89,500</div>
+              <div class="pred-confidence">
+                <span>conf</span>
+                <div class="confidence-bar"><span style="width:46%"></span></div>
+                <span>46%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Charts row ── -->
+      <section class="grid-2">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <span class="card-eyebrow">Price Action</span>
+              <div class="card-title">BTCUSDT · 4H 차트</div>
+            </div>
+            <span class="card-meta">12:34 KST</span>
+          </div>
+          <!-- Sample SVG candle area -->
+          <svg viewBox="0 0 600 220" style="width:100%;height:220px;display:block">
+            <defs>
+              <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#d97757" stop-opacity="0.35"/>
+                <stop offset="100%" stop-color="#d97757" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <!-- gridlines -->
+            <g stroke="#2e2620" stroke-width="1">
+              <line x1="0" y1="40"  x2="600" y2="40"/>
+              <line x1="0" y1="90"  x2="600" y2="90"/>
+              <line x1="0" y1="140" x2="600" y2="140"/>
+              <line x1="0" y1="190" x2="600" y2="190"/>
+            </g>
+            <!-- area -->
+            <path d="M0,160 L40,150 L80,140 L120,135 L160,120 L200,130 L240,110 L280,100 L320,115 L360,95 L400,85 L440,75 L480,90 L520,80 L560,65 L600,70 L600,220 L0,220 Z"
+                  fill="url(#areaGrad)"/>
+            <!-- line -->
+            <path d="M0,160 L40,150 L80,140 L120,135 L160,120 L200,130 L240,110 L280,100 L320,115 L360,95 L400,85 L440,75 L480,90 L520,80 L560,65 L600,70"
+                  fill="none" stroke="#d97757" stroke-width="2" stroke-linejoin="round"/>
+            <!-- last point -->
+            <circle cx="600" cy="70" r="4" fill="#d97757"/>
+            <circle cx="600" cy="70" r="9" fill="#d97757" opacity="0.25"/>
+          </svg>
+          <div style="display:flex;gap:var(--sp-4);margin-top:var(--sp-3);font-size:var(--fs-xs);color:var(--text-tertiary)">
+            <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent);margin-right:6px"></span>가격</span>
+            <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--info);margin-right:6px"></span>EMA21</span>
+            <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--success);margin-right:6px"></span>EMA55</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <span class="card-eyebrow">Indicators</span>
+              <div class="card-title">핵심 지표</div>
+            </div>
+            <span class="card-meta">RSI · MACD · BB · ATR</span>
+          </div>
+          <div class="ind-list">
+            <div class="ind-row"><span class="ind-name">RSI(14)</span><span class="ind-val">72.4</span><span class="ind-sig sell">SELL</span></div>
+            <div class="ind-row"><span class="ind-name">MACD</span><span class="ind-val">+128.4</span><span class="ind-sig buy">BUY</span></div>
+            <div class="ind-row"><span class="ind-name">Stoch %K</span><span class="ind-val">84.1</span><span class="ind-sig hold">HOLD</span></div>
+            <div class="ind-row"><span class="ind-name">ADX(14)</span><span class="ind-val">28.6</span><span class="ind-sig buy">BUY</span></div>
+            <div class="ind-row"><span class="ind-name">BB Width</span><span class="ind-val">3.42%</span><span class="ind-sig hold">HOLD</span></div>
+            <div class="ind-row"><span class="ind-name">ATR(14)</span><span class="ind-val">1,284</span><span class="ind-sig hold">HOLD</span></div>
+            <div class="ind-row"><span class="ind-name">OBV</span><span class="ind-val">↑ 12.4M</span><span class="ind-sig buy">BUY</span></div>
+            <div class="ind-row"><span class="ind-name">CMF(20)</span><span class="ind-val">+0.18</span><span class="ind-sig buy">BUY</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── 3-up: dominance / kimchi / funding ── -->
+      <section class="grid-3">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <span class="card-eyebrow">Dominance</span>
+              <div class="card-title">BTC Dominance</div>
+            </div>
+            <span class="metric-delta down">−0.22pp</span>
+          </div>
+          <div class="metric-value" style="font-size:var(--fs-2xl)">58.42%</div>
+          <svg class="spark" viewBox="0 0 200 60" preserveAspectRatio="none">
+            <path d="M0,30 L20,28 L40,32 L60,26 L80,30 L100,34 L120,28 L140,32 L160,38 L180,42 L200,40"
+                  fill="none" stroke="var(--accent)" stroke-width="2"/>
+          </svg>
+          <div class="card-meta" style="margin-top:var(--sp-2)">알트시즌 약신호 — 4주 추세 하락</div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <span class="card-eyebrow">Kimchi Premium</span>
+              <div class="card-title">한국 프리미엄</div>
+            </div>
+            <span class="metric-delta up">+0.4pp</span>
+          </div>
+          <div class="metric-value" style="font-size:var(--fs-2xl)">+1.83%</div>
+          <svg class="spark" viewBox="0 0 200 60" preserveAspectRatio="none">
+            <path d="M0,40 L20,42 L40,38 L60,30 L80,28 L100,24 L120,26 L140,22 L160,20 L180,18 L200,16"
+                  fill="none" stroke="var(--success)" stroke-width="2"/>
+          </svg>
+          <div class="card-meta" style="margin-top:var(--sp-2)">국내 매수세 회복 · 7일 평균 상회</div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <span class="card-eyebrow">Perp Funding</span>
+              <div class="card-title">바이낸스 펀딩비</div>
+            </div>
+            <span class="metric-delta flat">neutral</span>
+          </div>
+          <div class="metric-value" style="font-size:var(--fs-2xl)">+0.012%</div>
+          <svg class="spark" viewBox="0 0 200 60" preserveAspectRatio="none">
+            <path d="M0,30 L20,32 L40,30 L60,28 L80,32 L100,30 L120,28 L140,32 L160,30 L180,28 L200,30"
+                  fill="none" stroke="var(--info)" stroke-width="2"/>
+          </svg>
+          <div class="card-meta" style="margin-top:var(--sp-2)">롱·숏 균형 — 과열 신호 없음</div>
+        </div>
+      </section>
+
+      <!-- ── News & Events ── -->
+      <section class="grid-2">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <span class="card-eyebrow">Macro Events</span>
+              <div class="card-title">금주 주요 일정</div>
+            </div>
+            <a href="#" class="card-meta" style="color:var(--accent)">전체보기 →</a>
+          </div>
+          <div class="news-list">
+            <div class="news-row">
+              <span class="news-time">화 21:30</span>
+              <div class="news-body">
+                <div class="news-title">FOMC 의사록 공개</div>
+                <div class="news-meta">USD · 컨센서스 도비시</div>
+              </div>
+              <span class="news-impact high">HIGH</span>
+            </div>
+            <div class="news-row">
+              <span class="news-time">수 22:30</span>
+              <div class="news-body">
+                <div class="news-title">미국 CPI (4월)</div>
+                <div class="news-meta">예상 +2.4% YoY · 이전 +2.5%</div>
+              </div>
+              <span class="news-impact high">HIGH</span>
+            </div>
+            <div class="news-row">
+              <span class="news-time">목 21:30</span>
+              <div class="news-body">
+                <div class="news-title">신규 실업수당청구</div>
+                <div class="news-meta">예상 215K</div>
+              </div>
+              <span class="news-impact med">MED</span>
+            </div>
+            <div class="news-row">
+              <span class="news-time">금 23:00</span>
+              <div class="news-body">
+                <div class="news-title">미시간 소비자심리지수</div>
+                <div class="news-meta">예상 73.2</div>
+              </div>
+              <span class="news-impact med">MED</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <span class="card-eyebrow">News &amp; Social</span>
+              <div class="card-title">감성 분석 헤드라인</div>
+            </div>
+            <span class="card-meta">최근 6h · 24건</span>
+          </div>
+          <div class="news-list">
+            <div class="news-row">
+              <span class="news-time">12분 전</span>
+              <div class="news-body">
+                <div class="news-title">BlackRock IBIT 일일 순유입 $284M, 5일 연속 플러스</div>
+                <div class="news-meta">CoinDesk · sentiment <span style="color:var(--success)">+0.78</span></div>
+              </div>
+            </div>
+            <div class="news-row">
+              <span class="news-time">38분 전</span>
+              <div class="news-body">
+                <div class="news-title">SEC, 이더리움 ETF 추가 승인 검토 보도</div>
+                <div class="news-meta">Bloomberg · sentiment <span style="color:var(--success)">+0.62</span></div>
+              </div>
+            </div>
+            <div class="news-row">
+              <span class="news-time">1시간 전</span>
+              <div class="news-body">
+                <div class="news-title">미 재무부, 스테이블코인 가이드라인 초안 공개</div>
+                <div class="news-meta">Reuters · sentiment <span style="color:var(--text-tertiary)">+0.04</span></div>
+              </div>
+            </div>
+            <div class="news-row">
+              <span class="news-time">2시간 전</span>
+              <div class="news-body">
+                <div class="news-title">바이낸스 KYC 강화 발표 — 일부 지역 거래 제한</div>
+                <div class="news-meta">CryptoSlate · sentiment <span style="color:var(--danger)">−0.41</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Confluence zones ── -->
+      <section class="card">
+        <div class="card-head">
+          <div>
+            <span class="card-eyebrow">Confluence</span>
+            <div class="card-title">멀티 TF 컨플루언스 존</div>
+          </div>
+          <span class="card-meta">4H · 1H · 15m</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--sp-3);margin-top:var(--sp-2)">
+          <div style="padding:var(--sp-3) var(--sp-4);background:var(--success-soft);border:1px solid rgba(127,163,122,0.3);border-radius:var(--r-md)">
+            <div style="font-size:var(--fs-2xs);font-weight:700;letter-spacing:.08em;color:var(--success);text-transform:uppercase">Strong Support</div>
+            <div style="font-family:var(--font-mono);font-size:var(--fs-lg);font-weight:700;margin-top:4px">$92,800 ~ $93,400</div>
+            <div style="font-size:var(--fs-xs);color:var(--text-tertiary);margin-top:4px">EMA55 · 4H pivot · VAL</div>
+          </div>
+          <div style="padding:var(--sp-3) var(--sp-4);background:var(--bg-elevated);border:1px solid var(--border-default);border-radius:var(--r-md)">
+            <div style="font-size:var(--fs-2xs);font-weight:700;letter-spacing:.08em;color:var(--text-tertiary);text-transform:uppercase">Support</div>
+            <div style="font-family:var(--font-mono);font-size:var(--fs-lg);font-weight:700;margin-top:4px">$91,200</div>
+            <div style="font-size:var(--fs-xs);color:var(--text-tertiary);margin-top:4px">1H pivot · prior high</div>
+          </div>
+          <div style="padding:var(--sp-3) var(--sp-4);background:var(--bg-elevated);border:1px solid var(--border-default);border-radius:var(--r-md)">
+            <div style="font-size:var(--fs-2xs);font-weight:700;letter-spacing:.08em;color:var(--text-tertiary);text-transform:uppercase">Resistance</div>
+            <div style="font-family:var(--font-mono);font-size:var(--fs-lg);font-weight:700;margin-top:4px">$95,400</div>
+            <div style="font-size:var(--fs-xs);color:var(--text-tertiary);margin-top:4px">15m pivot · BB upper</div>
+          </div>
+          <div style="padding:var(--sp-3) var(--sp-4);background:var(--danger-soft);border:1px solid rgba(200,103,90,0.3);border-radius:var(--r-md)">
+            <div style="font-size:var(--fs-2xs);font-weight:700;letter-spacing:.08em;color:var(--danger);text-transform:uppercase">Strong Resistance</div>
+            <div style="font-family:var(--font-mono);font-size:var(--fs-lg);font-weight:700;margin-top:4px">$96,800 ~ $97,500</div>
+            <div style="font-size:var(--fs-xs);color:var(--text-tertiary);margin-top:4px">4H pivot · prev ATH</div>
+          </div>
+        </div>
+      </section>
+
+    </div><!-- /.content -->
+
+    <footer class="foot">
+      <span>Crypto Analyzer Pro · v2.0 · Claude Dark</span>
+      <span>last refresh · just now</span>
+    </footer>
+  </main>
+</div>
+
+</body>
+</html>

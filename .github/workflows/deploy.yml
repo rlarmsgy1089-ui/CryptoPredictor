@@ -52,7 +52,12 @@ jobs:
             echo "❌ STATICRYPT_PASSWORD secret 미설정 — repo Settings → Secrets → Actions 에서 추가하세요."
             exit 1
           fi
-          staticrypt crypto-analyzer.html -p "$STATICRYPT_PASSWORD" -d build
+          # --short: 14자 미만 비번 경고 스킵
+          # printf "y\n": 그래도 프롬프트 뜨면 자동 y 입력
+          printf "y\n" | staticrypt crypto-analyzer.html -p "$STATICRYPT_PASSWORD" --short -d build || {
+            echo "❌ staticrypt 실패. 비번을 14자 이상으로 설정하세요."
+            exit 1
+          }
           echo "--- build 폴더 내용 ---"
           ls -la build/ || true
           if [ -f build/crypto-analyzer.html ]; then

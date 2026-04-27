@@ -27,3 +27,8 @@ __pycache__/
 
 # StatiCrypt 빌드 결과물 (배포 시 자동 생성)
 build/
+
+# LunarCrush 자동 브리핑 — 로컬 전용 (GitHub Pages 비공개 영역, 사용자별 데이터)
+#   .md = 브리핑 본문 / _raw.json = 원시 API 응답 (어제 비교용)
+#   index.json = 최신 목록
+lunarcrush_brief/
